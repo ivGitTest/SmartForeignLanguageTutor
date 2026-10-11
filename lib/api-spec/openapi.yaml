@@ -11,6 +11,90 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /v1/config:
+    get:
+      operationId: getPrototypeConfig
+      tags: [prototype]
+      responses:
+        "200":
+          description: Owner configuration
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PrototypeConfig" }
+  /v1/transcriptions:
+    post:
+      operationId: transcribeRecording
+      tags: [prototype]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: "#/components/schemas/AudioInput" }
+      responses:
+        "200":
+          description: Transcript
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TranscriptResult" }
+  /v1/rewrites:
+    post:
+      operationId: rewriteTranscript
+      tags: [prototype]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RewriteInput" }
+      responses:
+        "200":
+          description: Rewrite
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RewriteResult" }
+  /auth/user:
+    get:
+      operationId: getCurrentAuthUser
+      responses:
+        "200":
+          description: Current identity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthUserEnvelope" }
+  /login:
+    get:
+      operationId: beginBrowserLogin
+      responses: { "302": { description: Replit login redirect } }
+  /callback:
+    get:
+      operationId: handleBrowserLoginCallback
+      responses: { "302": { description: Auth callback redirect } }
+  /logout:
+    get:
+      operationId: logoutBrowserSession
+      responses: { "302": { description: Logout redirect } }
+  /mobile-auth/token-exchange:
+    post:
+      operationId: exchangeMobileAuthorizationCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MobileTokenExchangeRequest" }
+      responses:
+        "200":
+          description: Session token
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MobileTokenExchangeSuccess" }
+  /mobile-auth/logout:
+    post:
+      operationId: logoutMobileSession
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LogoutSuccess" }
   /healthz:
     get:
       operationId: healthCheck
@@ -26,6 +110,120 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    AiParameters:
+      type: object
+      additionalProperties: false
+      required: [temperature, top_p, max_tokens]
+      properties:
+        temperature: { type: number, minimum: 0, maximum: 2 }
+        top_p: { type: number, exclusiveMinimum: 0, maximum: 1 }
+        max_tokens: { type: integer, minimum: 64, maximum: 4096 }
+        seed: { type: integer, minimum: 0, maximum: 2147483647 }
+    AudioInput:
+      type: object
+      additionalProperties: false
+      required: [audio, recordingId, requestId, temperature]
+      properties:
+        audio: { type: string, format: binary }
+        recordingId: { type: string, format: uuid }
+        requestId: { type: string, format: uuid }
+        temperature: { type: number, minimum: 0, maximum: 1 }
+    RewriteInput:
+      type: object
+      additionalProperties: false
+      required: [recordingId, requestId, textRevision, text, sourceLevel, targetLevel, instruction, parameters, settingsRevision]
+      properties:
+        recordingId: { type: string, format: uuid }
+        requestId: { type: string, format: uuid }
+        textRevision: { type: integer, minimum: 0 }
+        text: { type: string, minLength: 1, maxLength: 10000 }
+        sourceLevel: { type: string, enum: [B1] }
+        targetLevel: { type: string, enum: [B2, C1] }
+        instruction: { type: string, minLength: 1, maxLength: 20000 }
+        parameters: { $ref: "#/components/schemas/AiParameters" }
+        settingsRevision: { type: integer, minimum: 0 }
+    TranscriptResult:
+      type: object
+      required: [recordingId, requestId, text, model, temperature, processingMs, createdAt, usageCostUsd]
+      properties:
+        recordingId: { type: string }
+        requestId: { type: string }
+        text: { type: string }
+        model: { type: string }
+        temperature: { type: number }
+        processingMs: { type: integer }
+        createdAt: { type: string }
+        usageCostUsd: { type: [number, "null"] }
+    RewriteResult:
+      type: object
+      required: [recordingId, requestId, textRevision, text, sourceLevel, targetLevel, model, instruction, parameters, settingsRevision, defaultsVersion, finishReason, processingMs, createdAt, usageCostUsd]
+      properties:
+        recordingId: { type: string }
+        requestId: { type: string }
+        textRevision: { type: integer }
+        text: { type: string }
+        sourceLevel: { type: string, enum: [B1] }
+        targetLevel: { type: string, enum: [B2, C1] }
+        model: { type: string }
+        instruction: { type: string }
+        parameters: { $ref: "#/components/schemas/AiParameters" }
+        settingsRevision: { type: integer }
+        defaultsVersion: { type: string }
+        finishReason: { type: string }
+        processingMs: { type: integer }
+        createdAt: { type: string }
+        usageCostUsd: { type: [number, "null"] }
+    PrototypeConfig:
+      type: object
+      required: [provider, transcriptionModel, rewriteModel, defaultInstruction, defaultParameters, defaultTranscriptionTemperature, defaultsVersion, maxRecordingSeconds, maxAudioBytes, timeoutMs, apiConfigured]
+      properties:
+        provider: { type: string }
+        transcriptionModel: { type: string }
+        rewriteModel: { type: string }
+        defaultInstruction: { type: string }
+        defaultParameters: { $ref: "#/components/schemas/AiParameters" }
+        defaultTranscriptionTemperature: { type: number }
+        defaultsVersion: { type: string }
+        maxRecordingSeconds: { type: integer }
+        maxAudioBytes: { type: integer }
+        timeoutMs: { type: integer }
+        apiConfigured: { type: boolean }
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl]
+      properties:
+        id: { type: string }
+        email: { type: [string, "null"] }
+        firstName: { type: [string, "null"] }
+        lastName: { type: [string, "null"] }
+        profileImageUrl: { type: [string, "null"] }
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+    MobileTokenExchangeRequest:
+      type: object
+      required: [code, code_verifier, redirect_uri, state]
+      properties:
+        code: { type: string, minLength: 1 }
+        code_verifier: { type: string, minLength: 1 }
+        redirect_uri: { type: string, minLength: 1, format: uri }
+        state: { type: string, minLength: 1 }
+        nonce: { type: string, minLength: 1 }
+    MobileTokenExchangeSuccess:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
+    LogoutSuccess:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
     HealthStatus:
       type: object
       properties:
