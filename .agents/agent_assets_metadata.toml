@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "u9DnNw3VvY28-P9CjPWEV"
+uri = "file://docs/prototype-technical-requirements.md"
+type = "text"
+title = "Технические требования к прототипу — версия 0.1"
+description = "Проект ТЗ на согласование: границы прототипа, архитектура, API, локальное хранение, безопасность и критерии приёмки. Подтверждённые решения отделены от предложений."
+logical_id = "7fb3401e-12e3-44d4-86e2-019eed23ed87"
+content_hash = "sha256:104d6d85c4d081bec25e578aeb2ab3ab4e40e34ae4adfb3e1a475c9482ae48a4"
+size = 45924
+mtime_ms = 1791754521333
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:5cc5f733-f51e-4af1-9191-2d0bb1f039c9/7fb3401e-12e3-44d4-86e2-019eed23ed87/4e554b0a-dda4-457e-8235-8d64dba67f4c"
+storage_version_token = "1791754547222915"
+content_type = "text/markdown"
