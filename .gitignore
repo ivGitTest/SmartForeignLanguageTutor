@@ -47,3 +47,33 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Agent memory, instructions and local service notes (not application source)
+.agents/
+.agent/
+.claude/
+.codex/
+.cursor/
+.github/instructions/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+/replit.md
+/profile.md
+/agent-notes/
+/user-requests/
+/scratch/
+
+# Raw user uploads; application assets must be moved into application directories
+/attached_assets/
+
+# Local diagnostics and generated deliverables
+/logs/
+/generated-artifacts/
+*.log
+
+# Real environment files; keep non-secret configuration examples
+.env
+.env.*
+!.env.example
+!.env.*.example
