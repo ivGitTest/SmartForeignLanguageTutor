@@ -48,6 +48,9 @@ Thumbs.db
 .cache/
 .local/
 /.conversation/
+# Replit workspace and image-packaging settings stay local; pnpm/EAS builds do not use these files.
+/.replit
+/.replitignore
 
 # Agent memory, instructions and local service notes (not application source)
 .agents/
