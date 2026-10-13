@@ -6,6 +6,14 @@ import { KeyboardAwareScrollViewCompat } from "./KeyboardAwareScrollViewCompat";
 import { useColors } from "../hooks/useColors";
 import { APP_NAME } from "../constants/app";
 
+export type ButtonTone = "again" | "hard" | "good" | "easy";
+const buttonTones: Record<ButtonTone, { background: string; foreground: string }> = {
+  again: { background: "#a33b36", foreground: "#fffefa" },
+  hard: { background: "#985117", foreground: "#fffefa" },
+  good: { background: "#315f91", foreground: "#fffefa" },
+  easy: { background: "#367044", foreground: "#fffefa" },
+};
+
 export function Body({ style, muted, ...props }: TextProps & { muted?: boolean }) {
   const c = useColors();
   return <Text {...props} style={[{ fontFamily: "DMSans_400Regular", fontSize: 15, lineHeight: 23, color: muted ? c.mutedForeground : c.foreground }, style]} />;
@@ -24,13 +32,15 @@ export function Card({ children, style }: { children: React.ReactNode; style?: V
 export function Row({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   return <View style={[{ flexDirection: "row", alignItems: "center", gap: 10, justifyContent: "space-between" }, style]}>{children}</View>;
 }
-export function Button({ title, onPress, disabled, secondary, destructive, icon }: {
-  title: string; onPress: () => void; disabled?: boolean; secondary?: boolean; destructive?: boolean; icon?: React.ComponentProps<typeof MaterialIcons>["name"];
+export function Button({ title, onPress, disabled, secondary, destructive, icon, tone }: {
+  title: string; onPress: () => void; disabled?: boolean; secondary?: boolean; destructive?: boolean; icon?: React.ComponentProps<typeof MaterialIcons>["name"]; tone?: ButtonTone;
 }) {
   const c = useColors();
-  const foreground = secondary ? destructive ? c.destructive : c.primary : c.primaryForeground;
+  const toneColors = tone ? buttonTones[tone] : undefined;
+  const foreground = toneColors?.foreground ?? (secondary ? destructive ? c.destructive : c.primary : c.primaryForeground);
+  const background = toneColors?.background ?? (secondary ? c.secondary : destructive ? c.destructive : c.primary);
   return <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled: !!disabled }} disabled={disabled} onPress={onPress}
-    style={({ pressed }) => ({ minHeight: 50, paddingHorizontal: 17, paddingVertical: 12, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, opacity: disabled ? 0.45 : pressed ? 0.8 : 1, backgroundColor: secondary ? c.secondary : destructive ? c.destructive : c.primary })}>
+    style={({ pressed }) => ({ minHeight: 50, paddingHorizontal: 17, paddingVertical: 12, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, opacity: disabled ? 0.45 : pressed ? 0.8 : 1, backgroundColor: background })}>
     {icon && <MaterialIcons name={icon} size={20} color={foreground} />}
     <Body style={{ fontFamily: "DMSans_700Bold", color: foreground, textAlign: "center" }}>{title}</Body>
   </Pressable>;
@@ -41,9 +51,9 @@ export function IconButton({ name, label, onPress, disabled }: { name: React.Com
     <MaterialIcons name={name} size={24} color={c.primary} />
   </Pressable>;
 }
-export function Field({ label, style, ...props }: TextInputProps & { label: string }) {
+export function Field({ label, style, containerStyle, ...props }: TextInputProps & { label: string; containerStyle?: ViewStyle }) {
   const c = useColors();
-  return <View style={{ gap: 7 }}>
+  return <View style={[{ gap: 7 }, containerStyle]}>
     <Body style={{ fontFamily: "DMSans_600SemiBold", fontSize: 13 }}>{label}</Body>
     <TextInput {...props} accessibilityLabel={label} placeholderTextColor={c.mutedForeground}
       style={[{ fontFamily: "DMSans_400Regular", fontSize: 16, color: c.foreground, padding: 13, minHeight: 49, borderWidth: 1, borderColor: c.border, borderRadius: 14, backgroundColor: c.card, textAlignVertical: props.multiline ? "top" : "center" }, style]} />

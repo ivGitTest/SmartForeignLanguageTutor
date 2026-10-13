@@ -10,11 +10,17 @@ import { operations } from "@/core/operations";
 import { getCatalog, modelPrice, type Catalog } from "@/core/openrouter";
 import { confirm } from "@/core/confirm";
 import { useColors } from "@/hooks/useColors";
+import * as Application from "expo-application";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 
 export default function SettingsScreen() {
   const { data, repo, active } = useApp();
   const c = useColors();
   const task = useTask();
+  const appVersion = Constants.expoConfig?.version ?? Application.nativeApplicationVersion ?? "Unknown";
+  const nativeBuildVersion = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+    ? null
+    : Application.nativeBuildVersion;
   const [connected, setConnected] = useState<boolean | null>(null);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [catalogError, setCatalogError] = useState("");
@@ -115,7 +121,7 @@ export default function SettingsScreen() {
     })} />
     {active && <Button title="Cancel active AI request" secondary onPress={() => operations.cancel()} />}
     {!!task.error && <Notice error>{task.error}</Notice>}
-    <Card><Label>DEVELOPER</Label><Body>Рыбаков Иван</Body><Pressable accessibilityRole="link" accessibilityLabel="@ivTelegram" style={{ minHeight: 44, justifyContent: "center" }} onPress={() => void task.run(async () => {
+    <Card><Label>DEVELOPER</Label><Body>Рыбаков Иван</Body><Body muted style={{ fontSize: 12 }} testID="app-version">Version {appVersion} · {nativeBuildVersion ? `Build ${nativeBuildVersion}` : "Preview"}</Body><Pressable accessibilityRole="link" accessibilityLabel="@ivTelegram" style={{ minHeight: 44, justifyContent: "center" }} onPress={() => void task.run(async () => {
       try { await Linking.openURL("https://t.me/ivTelegram"); } catch { throw new Error("Could not open Telegram. Open t.me/ivTelegram in your browser."); }
     })}><Body style={{ color: c.primary, fontFamily: "DMSans_600SemiBold" }}>@ivTelegram →</Body></Pressable></Card>
   </Screen>;

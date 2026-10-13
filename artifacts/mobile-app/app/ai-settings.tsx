@@ -6,6 +6,8 @@ import { settingsSchema, type Parameters } from "@/core/model";
 import { useUnsavedChanges } from "@/core/unsaved";
 
 type ParameterDraft = { temperature: string; top_p: string; max_tokens: string; seed: string };
+const promptContainerStyle = { width: "100%", minWidth: 0 } as const;
+const promptInputStyle = { width: "100%", minWidth: 0, maxWidth: "100%", fontSize: 15 } as const;
 const draft = (p: Parameters): ParameterDraft => ({ temperature: String(p.temperature), top_p: String(p.top_p), max_tokens: String(p.max_tokens), seed: p.seed === undefined ? "" : String(p.seed) });
 function parse(p: ParameterDraft): Parameters {
   for (const key of ["temperature", "top_p", "max_tokens"] as const) if (!p[key].trim() || !Number.isFinite(Number(p[key]))) throw new Error(`Enter a numeric ${key}.`);
@@ -36,11 +38,11 @@ export default function AISettingsScreen() {
       <Notice>OpenRouter's generic STT prompt is ignored by the endpoint, so no ineffective prompt editor is shown. A remains a transcription, not an improvement.</Notice>
     </Card>
     <Card><Heading small>B · Improve to B2</Heading><ParametersForm value={bParameters} change={setBParameters} />
-      <Disclosure label="Edit B instruction"><Field label="B instruction" value={bPrompt} onChangeText={setBPrompt} multiline maxLength={20000} style={{ minHeight: 240 }} /></Disclosure>
+      <Disclosure label="Edit B instruction"><Field label="B instruction" value={bPrompt} onChangeText={setBPrompt} multiline maxLength={20000} containerStyle={promptContainerStyle} style={[promptInputStyle, { minHeight: 240 }]} /></Disclosure>
     </Card>
     <Card><Heading small>Translation</Heading><Body muted>Used for Russian translation and contextual meanings. Both use model B.</Body><ParametersForm value={translationParameters} change={setTranslationParameters} />
-      <Disclosure label="Edit full translation instruction"><Field label="Translation instruction" value={translationPrompt} onChangeText={setTranslationPrompt} multiline maxLength={20000} style={{ minHeight: 190 }} /></Disclosure>
-      <Disclosure label="Edit contextual translation instruction"><Field label="Context instruction" value={contextPrompt} onChangeText={setContextPrompt} multiline maxLength={20000} style={{ minHeight: 190 }} /></Disclosure>
+      <Disclosure label="Edit full translation instruction"><Field label="Translation instruction" value={translationPrompt} onChangeText={setTranslationPrompt} multiline maxLength={20000} containerStyle={promptContainerStyle} style={[promptInputStyle, { minHeight: 190 }]} /></Disclosure>
+      <Disclosure label="Edit contextual translation instruction"><Field label="Context instruction" value={contextPrompt} onChangeText={setContextPrompt} multiline maxLength={20000} containerStyle={promptContainerStyle} style={[promptInputStyle, { minHeight: 190 }]} /></Disclosure>
     </Card>
     <Button title={task.pending ? "Saving…" : "Save AI settings"} icon="check" disabled={task.pending} onPress={() => void task.run(async () => {
       if (!aTemperature.trim() || !Number.isFinite(Number(aTemperature))) throw new Error("A temperature must be a number from 0 to 1.");

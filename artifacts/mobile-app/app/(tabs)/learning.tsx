@@ -2,10 +2,18 @@ import React, { useEffect } from "react";
 import { View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Body, Button, Card, Heading, Label, Notice, Row, Screen, useTask } from "@/components/ui";
+import type { ButtonTone } from "@/components/ui";
 import { useApp } from "@/core/app-store";
 import { eligible, GRADES, rate, startSession } from "@/core/learning";
 import { speak, stopSpeaking } from "@/core/speech";
 import { useColors } from "@/hooks/useColors";
+
+const gradeTones: Record<(typeof GRADES)[number]["label"], ButtonTone> = {
+  Again: "again",
+  Hard: "hard",
+  Good: "good",
+  Easy: "easy",
+};
 
 export default function Learning() {
   const { data, repo } = useApp();
@@ -31,7 +39,7 @@ export default function Learning() {
     </Card>
     <Button title="Listen" icon="volume-up" secondary onPress={() => void task.run(() => speak(card.expression, task.setError))} />
     {!session.revealed ? <Button title="Show answer" disabled={task.pending} onPress={() => void task.run(() => repo.update(d => { if (d.session?.id === session.id && d.session.index === session.index) d.session.revealed = true; }))} /> :
-      <View style={{ gap: 10 }}><Body muted>How well did you remember?</Body><Row style={{ flexWrap: "wrap" }}>{GRADES.map(grade => <View key={grade.label} style={{ width: "47%" }}><Button title={grade.label} secondary={grade.quality < 4} disabled={task.pending} onPress={() => void task.run(() => repo.update(d => rate(d, session.id, card.id, grade.quality)))} /></View>)}</Row></View>}
+      <View style={{ gap: 10 }}><Body muted>How well did you remember?</Body><Row style={{ flexWrap: "wrap" }}>{GRADES.map(grade => <View key={grade.label} style={{ width: "47%" }}><Button title={grade.label} tone={gradeTones[grade.label]} disabled={task.pending} onPress={() => void task.run(() => repo.update(d => rate(d, session.id, card.id, grade.quality)))} /></View>)}</Row></View>}
     {!!task.error && <Notice error>{task.error}</Notice>}
     <Body muted style={{ fontSize: 12 }}>Saved after every answer. You can switch modes and continue later. New words join the next session.</Body>
   </Screen>;

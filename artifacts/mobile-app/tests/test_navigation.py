@@ -1,11 +1,35 @@
 from __future__ import annotations
 
+import json
+import re
+from pathlib import Path
+
 import pytest
 from selenium.webdriver.support.ui import WebDriverWait
 
 from tests.helpers import fill, hide_keyboard, scroll_to_text, tap, tap_confirm, tap_tab, text_is_visible, wait_accessible, wait_text
 
 APP_PACKAGE = "com.englishlab.mobile"
+APP_ROOT = Path(__file__).resolve().parents[1]
+
+
+def assert_prompt_fits_screen(driver, disclosure: str, field_label: str) -> None:
+    tap(driver, disclosure, scroll_text=disclosure)
+    scroll_to_text(driver, field_label)
+    rect = wait_accessible(driver, field_label).rect
+    screen_width = driver.get_window_size()["width"]
+    assert rect["x"] >= 0, f"{field_label} starts outside the screen."
+    assert rect["x"] + rect["width"] <= screen_width - 10, (
+        f"{field_label} extends outside the {screen_width}px screen."
+    )
+
+
+def assert_app_version_is_present(driver) -> None:
+    app_version = json.loads((APP_ROOT / "app.json").read_text(encoding="utf-8"))["expo"]["version"]
+    assert re.search(
+        rf"Version {re.escape(app_version)} · (?:Build \d+|Preview)",
+        driver.page_source,
+    )
 
 
 def test_primary_modes_and_nested_screens_are_reachable(
@@ -30,6 +54,7 @@ def test_primary_modes_and_nested_screens_are_reachable(
     # or sending any generation request.
     tap(driver, "Settings")
     wait_text(driver, "Settings")
+    assert_app_version_is_present(driver)
     tap(driver, "Connect or manage key", scroll_text="Connect or manage key")
     wait_text(driver, "Connect your own key")
     driver.back()
@@ -51,6 +76,13 @@ def test_ai_settings_edit_save_reopen_and_restore_without_requests(android_drive
     tap(driver, "Prompts & parameters", scroll_text="Prompts & parameters")
     wait_text(driver, "AI settings")
     assert not driver.find_elements("accessibility id", "B instruction")
+    for disclosure, field in (
+        ("Edit B instruction", "B instruction"),
+        ("Edit full translation instruction", "Translation instruction"),
+        ("Edit contextual translation instruction", "Context instruction"),
+    ):
+        assert_prompt_fits_screen(driver, disclosure, field)
+        tap(driver, disclosure)
     fill(driver, "A temperature · 0–1", "0.3")
     hide_keyboard(driver)
     tap(driver, "Edit B instruction")
