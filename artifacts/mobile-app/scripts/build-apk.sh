@@ -44,10 +44,19 @@ process.stdin.on("end", () => {
 });
 '
 
-echo "Checking Expo login (expected account: $EXPECTED_OWNER)..."
+if [[ -n "${EXPO_TOKEN:-}" ]]; then
+  echo "Checking Expo access token (expected account: $EXPECTED_OWNER)..."
+else
+  echo "Checking saved Expo login (expected account: $EXPECTED_OWNER)..."
+fi
+
 if ! WHOAMI_OUTPUT="$(pnpm dlx "eas-cli@$EAS_CLI_VERSION" whoami 2>&1)"; then
   printf '%s\n' "$WHOAMI_OUTPUT" >&2
-  echo "Expo CLI is not logged in. Run: pnpm run eas:login" >&2
+  if [[ -n "${EXPO_TOKEN:-}" ]]; then
+    echo "Expo rejected EXPO_TOKEN. Replace it in Replit Secrets with a valid token for $EXPECTED_OWNER." >&2
+  else
+    echo "Expo CLI has no saved login. Run pnpm run eas:login once, or add EXPO_TOKEN to Replit Secrets." >&2
+  fi
   exit 1
 fi
 
