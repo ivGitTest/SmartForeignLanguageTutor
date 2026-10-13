@@ -1,0 +1,55 @@
+{
+  "words": [
+    {
+      "expression": "set up a meeting",
+      "translation": "организовать встречу",
+      "example": "Let's set up a meeting for Monday."
+    },
+    {
+      "expression": "figure out",
+      "translation": "разобраться; выяснить",
+      "example": "We need to figure out what went wrong."
+    },
+    {
+      "expression": "look into",
+      "translation": "изучить; разобраться",
+      "example": "I'll look into the problem this afternoon."
+    },
+    {
+      "expression": "run out of",
+      "translation": "исчерпать; остаться без",
+      "example": "We ran out of coffee this morning."
+    },
+    {
+      "expression": "get along with",
+      "translation": "ладить с кем-либо",
+      "example": "She gets along with her new colleagues."
+    },
+    {
+      "expression": "put off",
+      "translation": "откладывать",
+      "example": "Don't put off the appointment again."
+    },
+    {
+      "expression": "carry on",
+      "translation": "продолжать",
+      "example": "They carried on working after lunch."
+    },
+    {
+      "expression": "take part in",
+      "translation": "принимать участие",
+      "example": "He took part in the training session."
+    },
+    {
+      "expression": "deal with",
+      "translation": "иметь дело с; решать",
+      "example": "I deal with customer questions every day."
+    },
+    {
+      "expression": "find out",
+      "translation": "узнать; выяснить",
+      "example": "Let's find out when the train leaves."
+    }
+  ],
+  "material_title_prefix": "pytest-material"
+}
