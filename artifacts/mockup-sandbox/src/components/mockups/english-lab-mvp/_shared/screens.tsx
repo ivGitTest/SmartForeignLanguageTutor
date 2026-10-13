@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import "../_group.css";
 
+export const APP_NAME = "Smart Lang Tutor";
 const base = "/__mockup/preview/english-lab-mvp/";
 type ScreenProps = { initialTab?: "Dictionary" | "Materials" | "Learning" };
 const defaultCards = [
@@ -60,7 +61,7 @@ function Screen({ children, tab, title, tag }: { children: React.ReactNode; tab?
     <div className="app-shell">
       <header className="topbar">
         {title ? <button className="icon-button" aria-label="Back" onClick={() => history.back()}><ArrowLeft size={21}/></button> :
-          <div className="brand"><span className="brand-mark">e</span><span>English Lab</span></div>}
+          <div className="brand"><span className="brand-mark">s</span><span>{APP_NAME}</span></div>}
         {title && <span style={{fontWeight:700,marginRight:"auto",marginLeft:8}}>{title}</span>}
         <a className="icon-button" href={base+"Settings"} aria-label="Settings"><SettingsIcon size={20}/></a>
       </header>
@@ -391,7 +392,7 @@ const stateSamples=[
 ];
 export function States() {
  const [network,setNetwork]=useState("offline");const [request,setRequest]=useState(true);const [translationRetried,setTranslationRetried]=useState(false);
- return <div className="elab"><div className="review"><div className="eyebrow">ENGLISH LAB · REVIEW MOCKUPS · DEMO ONLY</div><h1>State coverage</h1><p style={{color:"var(--muted)",marginTop:7,maxWidth:760}}>Drawn UI-01–14 examples with working review-only toggles. No provider, microphone, secure storage, or Android action is performed.</p>
+ return <div className="elab"><div className="review"><div className="eyebrow"><span style={{textTransform:"none",letterSpacing:0}}>{APP_NAME}</span> · REVIEW MOCKUPS · DEMO ONLY</div><h1>State coverage</h1><p style={{color:"var(--muted)",marginTop:7,maxWidth:760}}>Drawn UI-01–14 examples with working review-only toggles. No provider, microphone, secure storage, or Android action is performed.</p>
  <div className="state-demo-grid">
   <article className="review-state"><span className="pill">UI-01 · EMPTY</span><h3>Dictionary · first open</h3><div className="card"><div className="orb"><BookOpen size={19}/></div><strong style={{display:"block",marginTop:9}}>Your first phrase is waiting.</strong><p>Add one by hand, or save it later from a thought.</p><a className="secondary full" href={base+"WordCard?new=1"} style={{marginTop:10,textDecoration:"none"}}>Add a word</a></div><p>Learning and Materials remain independent.</p></article>
   <article className="review-state"><span className="pill">UI-02 · NO KEY</span><h3>Connection not set up</h3><div className="state-banner">No provider key connected.</div><p>Local Dictionary, Materials and offline card review remain available.</p><a className="secondary full" href={base+"KeyConnection"} style={{marginTop:10,textDecoration:"none"}}>Review connection</a></article>
@@ -410,7 +411,7 @@ export function States() {
  <div className="review-grid">{stateSamples.map(([title,body])=><article className="review-state" key={title}><span className="pill">{title.split(" · ")[0]}</span><h3>{title.split(" · ").slice(1).join(" · ")}</h3><p>{body}</p></article>)}</div><div className="card" style={{marginTop:20}}><strong>Shared principles</strong><p className="micro" style={{marginTop:6}}>Prior result retained on failure · explicit retry · never silently substitute · no automatic paid retries · fresh audio discard exception only · keys and real personal data excluded from this review.</p></div></div></div>;
 }
 export function FlowMap() {
- return <div className="elab"><div className="review"><div className="eyebrow">ENGLISH LAB · REVIEW MOCKUPS · DEMO ONLY</div><h1>Independent routes, one practice loop</h1><p style={{color:"var(--muted)",marginTop:7}}>Three equally reachable modes. Settings live separately. Route arrows below are review navigation, not backend workflow.</p>
+ return <div className="elab"><div className="review"><div className="eyebrow"><span style={{textTransform:"none",letterSpacing:0}}>{APP_NAME}</span> · REVIEW MOCKUPS · DEMO ONLY</div><h1>Independent routes, one practice loop</h1><p style={{color:"var(--muted)",marginTop:7}}>Three equally reachable modes. Settings live separately. Route arrows below are review navigation, not backend workflow.</p>
  <div className="card" style={{marginTop:20}}><span className="pill">APP START</span><div className="path"><span>Dictionary · launch mode</span><ArrowRight/><span>Materials · record anytime</span><ArrowRight/><span>A · editable transcript</span><ArrowRight/><span>B · read-only improvement</span><ArrowRight/><span>Translation · folded, RU</span></div><div className="path"><span>Learning · independent</span><ArrowRight/><span>Fixed queue · up to 10 unique</span><ArrowRight/><span>Reveal · Again / Hard / Good / Easy</span><ArrowRight/><span>Complete</span></div><p className="micro">Edit a captured phrase only in Dictionary. New words do not enter the active queue.</p></div>
  <h2 style={{marginTop:27}}>Resumption scenarios · AC-18–20</h2><div className="review-grid">
  <article className="review-state"><span className="pill">AC-18</span><h3>Record → Dictionary → Learning → material</h3><p>Record a fragment, review and rate cards, then return to the material. Audio remains and A can be created without recording again.</p></article>

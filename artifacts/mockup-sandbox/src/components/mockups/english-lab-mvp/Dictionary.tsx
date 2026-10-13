@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { APP_NAME } from "./_shared/screens";
 
 const previewWords = [
   "to make a point",
@@ -128,7 +129,7 @@ export function Dictionary() {
       `}</style>
       <div className="sl-shell">
         <header className="sl-top">
-          <div className="sl-brand"><span className="sl-mark" aria-hidden="true">s</span><span>Smart lang tutor</span></div>
+          <div className="sl-brand"><span className="sl-mark" aria-hidden="true">S</span><span>{APP_NAME}</span></div>
           <a className="sl-settings" href="/__mockup/preview/english-lab-mvp/Settings" aria-label="Settings">
             <svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none">
               <path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z" stroke="currentColor" strokeWidth="1.6"/>
