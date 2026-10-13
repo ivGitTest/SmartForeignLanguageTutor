@@ -1,0 +1,28 @@
+.settings-order .elab .app-shell > .content {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-order .elab .app-shell > .content > :nth-child(1) {
+  order: 1;
+}
+
+.settings-order .elab .app-shell > .content > :nth-child(2) {
+  order: 2;
+}
+
+.settings-order .elab .app-shell > .content > :nth-child(3) {
+  order: 3;
+}
+
+.settings-order .elab .app-shell > .content > :nth-child(4) {
+  order: 5;
+}
+
+.settings-order .elab .app-shell > .content > :nth-child(5) {
+  order: 4;
+}
+
+.settings-order .elab .app-shell > .content > :nth-child(n + 6) {
+  order: 6;
+}
