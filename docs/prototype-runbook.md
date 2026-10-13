@@ -2,6 +2,8 @@
 
 Утверждённые требования: [ТЗ 0.3](prototype-technical-requirements.md).
 
+Термины: [единый словарь](terminology.md). Это инструкция веб-прототипа, не мобильного MVP.
+
 ## Среда
 
 Веб-прототип для ПК и Firefox: `/language-prototype/`.
