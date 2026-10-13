@@ -1,1 +1,1 @@
-export { FirstLaunch } from "./_shared/screens";
+export { Dictionary as FirstLaunch } from "./Dictionary";
