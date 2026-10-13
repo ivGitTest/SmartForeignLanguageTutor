@@ -27,7 +27,10 @@ def wait_text(driver, value: str, timeout: float = 12):
         lambda current: next(
             (
                 element
-                for element in current.find_elements(*locator)
+                for element in (
+                    current.find_elements(*locator)
+                    + current.find_elements(AppiumBy.ACCESSIBILITY_ID, value)
+                )
                 if element.is_displayed()
             ),
             False,
@@ -36,7 +39,8 @@ def wait_text(driver, value: str, timeout: float = 12):
 
 
 def text_is_visible(driver, value: str) -> bool:
-    return any(element.is_displayed() for element in driver.find_elements(*_text_locator(value)))
+    elements = driver.find_elements(*_text_locator(value)) + driver.find_elements(AppiumBy.ACCESSIBILITY_ID, value)
+    return any(element.is_displayed() for element in elements)
 
 
 def wait_accessible(driver, label: str, timeout: float = 12):
@@ -75,6 +79,8 @@ def tap_text(driver, value: str, timeout: float = 12) -> None:
 
 
 def fill(driver, label: str, value: str, timeout: float = 12) -> None:
+    if not any(element.is_displayed() for element in driver.find_elements(AppiumBy.ACCESSIBILITY_ID, label)):
+        scroll_to_text(driver, label, timeout)
     field = wait_accessible(driver, label, timeout)
     field.click()
     field.clear()
@@ -91,8 +97,28 @@ def hide_keyboard(driver) -> None:
 
 
 def tap_tab(driver, title: str) -> None:
-    tap(driver, title, timeout=6)
-    wait_text(driver, title, timeout=12)
+    # Detail screens are on the root Stack, outside the tab navigator.
+    # Return to the tabs before switching modes; do not press a heading that
+    # happens to have the same text as a tab.
+    def tab_labels(label):
+        elements = driver.find_elements(*_text_locator(label))
+        elements += driver.find_elements(
+            AppiumBy.ANDROID_UIAUTOMATOR,
+            f"new UiSelector().descriptionMatches({_quoted(label + '(,.*)?')})",
+        )
+        return [element for element in elements if element.is_displayed()]
+
+    for _ in range(5):
+        if all(tab_labels(tab) for tab in ("Dictionary", "Materials", "Learning")):
+            break
+        driver.back()
+        time.sleep(0.3)
+    else:
+        raise AssertionError("Could not return to the three primary tabs.")
+    visible = tab_labels(title)
+    assert visible, f"Tab {title!r} is not visible"
+    visible[-1].click()
+    assert tab_labels(title), f"Tab {title!r} disappeared after navigation"
 
 
 def tap_confirm(driver, timeout: float = 12) -> None:

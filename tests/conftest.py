@@ -10,6 +10,8 @@ from appium.webdriver.appium_service import AppiumService
 
 from tests.helpers import (
     add_word,
+    delete_material_from_detail,
+    fill,
     load_sample_data,
     open_word,
     tap,
@@ -21,6 +23,14 @@ from tests.helpers import (
 
 APP_PACKAGE = "com.englishlab.mobile"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def pytest_collection_modifyitems(items):
+    for item in items:
+        mode = item.path.stem.removeprefix("test_")
+        if mode in {"dictionary", "materials", "learning", "navigation"}:
+            item.add_marker(pytest.mark.android)
+            item.add_marker(getattr(pytest.mark, mode))
 
 
 @pytest.fixture(scope="session")
@@ -60,7 +70,7 @@ def android_driver():
 
     driver = None
     try:
-        driver = webdriver.Remote(service.service_url, options=options)
+        driver = webdriver.Remote(f"http://127.0.0.1:{port}", options=options)
         driver.implicitly_wait(1)
         yield driver
     finally:
@@ -69,10 +79,11 @@ def android_driver():
         service.stop()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def require_empty_test_app(android_driver):
     """Refuse to run against existing vocabulary or materials; never clear app data."""
     wait_text(android_driver, "Dictionary", timeout=45)
+    tap_tab(android_driver, "Dictionary")
     if not text_is_visible(android_driver, "Your first word starts here"):
         pytest.fail(
             "The test APK already contains dictionary data. Use an empty test app/"
@@ -107,6 +118,7 @@ def sample_dictionary(android_driver, require_empty_test_app):
     if search:
         search[0].clear()
     for expression in reversed(created):
+        fill(android_driver, "Search dictionary", expression)
         matches = android_driver.find_elements(
             "accessibility id", f"Open {expression}"
         )
@@ -120,6 +132,7 @@ def sample_dictionary(android_driver, require_empty_test_app):
         )
         tap_confirm(android_driver)
         wait_text(android_driver, "Dictionary")
+    fill(android_driver, "Search dictionary", "")
 
 
 @pytest.fixture

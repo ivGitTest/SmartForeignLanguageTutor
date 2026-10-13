@@ -51,5 +51,23 @@
       "example": "Let's find out when the train leaves."
     }
   ],
-  "material_title_prefix": "pytest-material"
+  "material_title_prefix": "pytest-material",
+  "materials": [
+    {
+      "title": "Planning a meeting",
+      "a": "I want set up a meeting tomorrow. We need figure out the problem.",
+      "b": "I'd like to set up a meeting tomorrow so we can figure out the problem.",
+      "translation": "Я хотел бы организовать встречу завтра, чтобы мы могли разобраться в проблеме.",
+      "expression": "figure out",
+      "meaning": "разобраться"
+    },
+    {
+      "title": "Preparing for an interview",
+      "a": "I work in testing. I deal with bugs and help my team.",
+      "b": "I work in software testing, where I deal with bugs and support my team.",
+      "translation": "Я работаю в тестировании программного обеспечения, где занимаюсь ошибками и поддерживаю свою команду.",
+      "expression": "deal with",
+      "meaning": "заниматься"
+    }
+  ]
 }

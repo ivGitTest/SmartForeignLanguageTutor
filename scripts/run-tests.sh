@@ -8,6 +8,9 @@ if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   cat <<'HELP'
 Run pytest UI tests on an Android emulator.
 
+Offline checks without an APK or emulator:
+  bash scripts/run-tests.sh --local
+
 Required:
   SMART_LANG_TUTOR_APK=/path/to/app.apk
   ANDROID_SERIAL=emulator-5554
@@ -22,9 +25,14 @@ HELP
   exit 0
 fi
 
+if [[ "${1:-}" == "--local" ]]; then
+  shift
+  exec python3 -m pytest -q -m "not android" "$@"
+fi
+
 if [[ -z "${SMART_LANG_TUTOR_APK:-}" || ! -f "${SMART_LANG_TUTOR_APK:-}" ]]; then
   echo "Set SMART_LANG_TUTOR_APK to the Android APK file." >&2
-  echo 'Example: SMART_LANG_TUTOR_APK="/path/to/smart-lang-tutor.apk" ANDROID_SERIAL="emulator-5554" ./scripts/run-tests.sh' >&2
+  echo 'Example: SMART_LANG_TUTOR_APK="/path/to/smart-lang-tutor.apk" ANDROID_SERIAL="emulator-5554" bash scripts/run-tests.sh' >&2
   exit 2
 fi
 

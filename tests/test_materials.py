@@ -11,6 +11,7 @@ from tests.helpers import (
     hide_keyboard,
     record_to_pending,
     save_material,
+    scroll_to_text,
     tap,
     tap_confirm,
     tap_tab,
@@ -48,7 +49,7 @@ def test_record_discard_save_search_resume_sort_and_delete(
     assert text_is_visible(driver, "Your materials · 0")
 
     # Save two native recordings so that sort order and last-material navigation are real.
-    save_material(driver, older)
+    save_material(driver, older, seconds=4)
     material_titles.append(older)
     tap_tab(driver, "Materials")
     time.sleep(0.15)
@@ -86,22 +87,23 @@ def test_record_discard_save_search_resume_sort_and_delete(
 
     # Playback is local. Never press Transcribe, Improve, Translate, or other AI actions.
     tap(driver, "Play audio")
-    try:
-        wait_accessible(driver, "Pause audio", timeout=1.5)
-        tap(driver, "Pause audio", timeout=2)
-    except Exception:
-        # A short recording may finish between the play press and the next UI update.
-        pass
+    wait_accessible(driver, "Pause audio", timeout=3)
+    tap(driver, "Pause audio", timeout=2)
+    wait_accessible(driver, "Play audio", timeout=3)
 
     # Removing audio leaves the material record, then whole-material deletion removes it.
     tap(driver, "Delete options")
     tap(driver, "Delete audio only", scroll_text="Delete audio only")
     tap_confirm(driver)
+    scroll_to_text(driver, "Audio was removed. Your saved texts are retained; re-transcription is unavailable.")
     wait_text(
         driver,
         "Audio was removed. Your saved texts are retained; re-transcription is unavailable.",
     )
+    scroll_to_text(driver, "Material title")
     assert wait_accessible(driver, "Material title").get_attribute("text") == older
+    scroll_to_text(driver, "Transcribe · A")
+    assert not wait_accessible(driver, "Transcribe · A").is_enabled()
     delete_material_from_detail(driver)
     wait_accessible(driver, f"Open {newer}")
     material_titles.remove(older)
