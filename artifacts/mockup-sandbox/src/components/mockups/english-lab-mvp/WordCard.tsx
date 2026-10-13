@@ -7,6 +7,7 @@ type ReviewProgress = { intervalDays: number; repetitions: number; ease: number;
 type ReviewStore = {
   cards?: DictionaryCard[];
   nativeLanguage?: string;
+  learningLanguage?: string;
   reviewProgress?: Record<string, ReviewProgress>;
 };
 
@@ -61,6 +62,8 @@ export function WordCard() {
   const [invalid, setInvalid] = useState(false);
   const nativeLanguageCode = (initialStore.nativeLanguage || "ru").trim().toLowerCase().split(/[-_]/)[0];
   const nativeLanguage = languageLabels[nativeLanguageCode] || nativeLanguageCode.toUpperCase();
+  const learningLanguageCode = (initialStore.learningLanguage || "en").trim().toLowerCase().split(/[-_]/)[0];
+  const learningLanguage = languageLabels[learningLanguageCode] || learningLanguageCode.toUpperCase();
   const displayTitle = isNew ? "Add a phrase" : (word || "Word card");
 
   function persist(patch: Partial<ReviewStore>) {
@@ -123,19 +126,19 @@ export function WordCard() {
 
         <main className="content">
           <div className="intro">
-            <div className="eyebrow">{nativeLanguage.toUpperCase()} → ENGLISH</div>
+            <div className="eyebrow">{learningLanguage.toUpperCase()} → {nativeLanguage.toUpperCase()}</div>
             <h1>{isNew ? "Add a phrase" : "A phrase to keep"}</h1>
             <p>{isNew ? "Create a card manually. Both language fields are required." : "Edit the card and its translation; review progress stays unchanged."}</p>
           </div>
 
-          <label htmlFor="word-expression">{nativeLanguage} expression</label>
+          <label htmlFor="word-expression">{learningLanguage} expression</label>
           <input id="word-expression" value={word} onChange={(event) => setWord(event.target.value)} />
           <label htmlFor="word-translation">Translation</label>
           <input id="word-translation" value={translation} onChange={(event) => setTranslation(event.target.value)} />
           <label htmlFor="word-example">Example</label>
           <textarea id="word-example" value={example} onChange={(event) => setExample(event.target.value)} />
 
-          {invalid && <div className="state-banner error" role="alert">Enter both the {nativeLanguage.toLowerCase()} expression and its translation.</div>}
+          {invalid && <div className="state-banner error" role="alert">Enter both the {learningLanguage.toLowerCase()} expression and its translation.</div>}
 
           <label>Source</label>
           <div className="card row">
