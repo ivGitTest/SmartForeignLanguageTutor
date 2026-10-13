@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  ArrowLeft, ArrowRight, BookOpen, BookmarkPlus, Check, ChevronDown, ChevronRight,
+  ArrowLeft, ArrowRight, BookOpen, Check, ChevronDown, ChevronRight,
   CircleHelp, Clock3, Headphones, Layers3, Mic, MoreHorizontal, Pause,
   Play, Plus, RotateCcw, Search, Settings as SettingsIcon, Sparkles, Volume2, X
 } from "lucide-react";
@@ -239,22 +239,9 @@ export function Material() {
   <button className="disclosure" aria-expanded={translationOpen} onClick={()=>setTranslationOpen(!translationOpen)}><span><strong>Translation · Russian</strong><div className="micro">{chain.translationStale?"Out of date · RU":"Ready · RU"}</div></span>{translationOpen?<ChevronDown/>:<ChevronRight/>}</button>
   {translationOpen&&<div className="card">{chain.translationStale&&<div className="pill warm" style={{marginBottom:9}}>FROM PREVIOUS B</div>}<p>{chain.translation}</p><p className="micro" style={{marginTop:8}}>Translation of current B · expand/collapse is local</p></div>}
   {chain.translationStale&&<Btn variant="secondary" className="full" onClick={()=>setNotice("Retry Translation sample only · no request was sent.")}>Retry Translation</Btn>}
-  <div className="actions"><Btn variant="secondary" onClick={()=>setNotice("Creating B is not connected in this review. Current result is retained.")} disabled={!text.trim()||textOverLimit}><Sparkles size={16}/> Create new B</Btn><a className="primary" href={base+"Phrase"} onClick={()=>setStore({phraseContext:{material:materialName,source:"B"}})} style={{textDecoration:"none"}}><BookmarkPlus size={16}/> Add phrase</a></div>
+   <div className="actions"><Btn variant="secondary" onClick={()=>setNotice("Creating B is not connected in this review. Current result is retained.")} disabled={!text.trim()||textOverLimit}><Sparkles size={16}/> Create new B</Btn></div>
  {notice&&<div style={{marginTop:13}}><Notice>{notice}</Notice></div>}
  <p className="micro" style={{marginTop:14}}>B is read-only. Edit A and create a new B to change wording.</p>
- </Screen>;
-}
-
-export function Phrase() {
- const [cards,setCards]=useDemo("cards",defaultCards); const [added,setAdded]=useState(false);
- return <Screen title="Phrase" tag="UI-07 · SHEET">
- <Head eyebrow="CONTEXTUAL MEANING · DEMO" title="A useful phrase" detail="One meaning, kept with the sentence that gave it context."/>
- <div className="card"><div className="eyebrow">SELECTED FROM B</div><div className="word" style={{marginTop:7}}>to change my routine</div><div className="divider"/><div className="micro">IN CONTEXT</div><p style={{marginTop:6}}>I’ve been thinking about changing my routine, but I’m not sure where to begin.</p></div>
- <div className="soft-card" style={{marginTop:14}}><div className="eyebrow">RUSSIAN · ONE CONTEXTUAL TRANSLATION</div><div className="word" style={{marginTop:8}}>изменить свой распорядок</div></div>
- <div className="actions"><Btn variant="secondary" onClick={()=>setAdded(false)}><RotateCcw size={16}/> Retry translation</Btn><Btn onClick={()=>{if(!cards.some((c:any)=>c.word==="to change my routine"))setCards([...cards,{word:"to change my routine",ru:"изменить свой распорядок",example:"I’ve been thinking about changing my routine, but I’m not sure where to begin.",source:"A quieter morning"}]);setAdded(true)}}><BookmarkPlus size={16}/> Add to Dictionary</Btn></div>
- {added&&<Notice>Added in this demo. Edit the card later in Dictionary.</Notice>}
- <a className="secondary full" style={{marginTop:12,textDecoration:"none"}} href={base+"Dictionary"}>Open Dictionary to edit</a>
- <p className="micro" style={{marginTop:14}}>No card fields here. The phrase and source sentence will be saved together.</p>
  </Screen>;
 }
 

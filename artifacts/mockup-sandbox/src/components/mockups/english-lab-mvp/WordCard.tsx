@@ -31,6 +31,16 @@ function readStore(): ReviewStore {
   }
 }
 
+function sentenceForExpression(example: string, expression: string) {
+  const source = example.trim();
+  const phrase = expression.trim().toLocaleLowerCase();
+  if (!source || !phrase) return source;
+  const sentences = source.match(/[^.!?]+(?:[.!?]+|$)/g) ?? [source];
+  return sentences.find((sentence) =>
+    sentence.toLocaleLowerCase().includes(phrase)
+  )?.trim() ?? source;
+}
+
 function readProgress(word: string): ReviewProgress {
   return readStore().reviewProgress?.[word] ?? {
     intervalDays: 2,
@@ -48,12 +58,16 @@ export function WordCard() {
   const initialStore = readStore();
   const isNew = new URLSearchParams(window.location.search).has("new");
   const initialWord = new URLSearchParams(window.location.search).get("word") || "";
-  const initialCard = initialStore.cards?.find((card) => card.word === initialWord)
-    ?? (isNew ? undefined : (initialStore.cards ?? defaultCards)[0]);
+  const initialCard = isNew
+    ? undefined
+    : initialStore.cards?.find((card) => card.word === initialWord)
+      ?? (initialStore.cards ?? defaultCards)[0];
   const [cards, setCards] = useState<DictionaryCard[]>(initialStore.cards ?? defaultCards);
   const [word, setWord] = useState(isNew ? "" : initialCard?.word ?? "");
   const [translation, setTranslation] = useState(isNew ? "" : initialCard?.ru ?? "");
-  const [example, setExample] = useState(isNew ? "" : initialCard?.example ?? "");
+  const [example, setExample] = useState(
+    !isNew && initialCard?.example ? sentenceForExpression(initialCard.example, initialCard.word) : ""
+  );
   const [progress, setProgress] = useState(() => initialCard ? readProgress(initialCard.word) : {
     intervalDays: 0, repetitions: 0, ease: 2.5, nextReview: null,
   });
@@ -64,7 +78,8 @@ export function WordCard() {
   const nativeLanguage = languageLabels[nativeLanguageCode] || nativeLanguageCode.toUpperCase();
   const learningLanguageCode = (initialStore.learningLanguage || "en").trim().toLowerCase().split(/[-_]/)[0];
   const learningLanguage = languageLabels[learningLanguageCode] || learningLanguageCode.toUpperCase();
-  const displayTitle = isNew ? "Add a phrase" : (word || "Word card");
+  const hasBContext = Boolean(initialCard?.source && initialCard.source !== "Manual card");
+  const displayTitle = isNew ? "Add a word" : (word || "Word card");
 
   function persist(patch: Partial<ReviewStore>) {
     try {
@@ -88,6 +103,7 @@ export function WordCard() {
     persist({ cards: saved });
     setInvalid(false);
     setFeedback("Card saved in this review demo.");
+    if (isNew) window.location.href = `${base}WordCard?word=${encodeURIComponent(word.trim())}`;
   }
 
   function confirmAction() {
@@ -127,16 +143,24 @@ export function WordCard() {
         <main className="content">
           <div className="intro">
             <div className="eyebrow">{learningLanguage.toUpperCase()} → {nativeLanguage.toUpperCase()}</div>
-            <h1>{isNew ? "Add a phrase" : "A phrase to keep"}</h1>
-            <p>{isNew ? "Create a card manually. Both language fields are required." : "Edit the card and its translation; review progress stays unchanged."}</p>
+            <h1>{isNew ? "Create a card manually" : "A phrase to keep"}</h1>
+            <p>{isNew
+              ? "Add a word or phrase directly to your Dictionary."
+              : "Edit this card; its review progress stays unchanged. Phrases from transcript B are added with the bookmark there."}</p>
           </div>
 
           <label htmlFor="word-expression">{learningLanguage} expression</label>
           <input id="word-expression" value={word} onChange={(event) => setWord(event.target.value)} />
-          <label htmlFor="word-translation">Translation</label>
+          <label htmlFor="word-translation">{hasBContext ? "AI translation" : "Translation"} · {nativeLanguage}</label>
           <input id="word-translation" value={translation} onChange={(event) => setTranslation(event.target.value)} />
-          <label htmlFor="word-example">Example</label>
+          <p className="micro">{hasBContext
+            ? "Generated from the selected expression and its context in B."
+            : "Enter the meaning in your native language."}</p>
+          <label htmlFor="word-example">{hasBContext ? "Example sentence from B" : "Example sentence"}</label>
           <textarea id="word-example" value={example} onChange={(event) => setExample(event.target.value)} />
+          <p className="micro">{hasBContext
+            ? "Keeps the sentence that contains this expression."
+            : "Optional context for this card."}</p>
 
           {invalid && <div className="state-banner error" role="alert">Enter both the {learningLanguage.toLowerCase()} expression and its translation.</div>}
 

@@ -43,6 +43,23 @@ function nodeElement(node: Node | null) {
   return node?.parentElement ?? null;
 }
 
+function sentenceAtRange(paragraph: HTMLParagraphElement, range: Range) {
+  const text = paragraph.textContent?.trim() ?? "";
+  if (!text) return "";
+
+  const prefix = document.createRange();
+  prefix.selectNodeContents(paragraph);
+  prefix.setEnd(range.startContainer, range.startOffset);
+  const selectionOffset = prefix.toString().length;
+  const sentences = Array.from(text.matchAll(/[^.!?]+(?:[.!?]+["'’”)\]]*|$)/g));
+  const sentence = sentences.find((match) => {
+    const start = match.index ?? 0;
+    return selectionOffset >= start && selectionOffset <= start + match[0].length;
+  });
+
+  return sentence?.[0].trim() ?? text;
+}
+
 export function Material() {
   const [selection, setSelection] = useState<SelectionPreview | null>(null);
   const [added, setAdded] = useState(false);
@@ -59,7 +76,17 @@ export function Material() {
     const anchorCard = nodeElement(current.anchorNode)?.closest(".card");
     const focusCard = nodeElement(current.focusNode)?.closest(".card");
     const heading = anchorCard?.querySelector("h2")?.textContent?.toLowerCase() ?? "";
-    if (!anchorCard || anchorCard !== focusCard || !heading.includes("improved transcript")) {
+    const transcript = anchorCard?.querySelector("p") ?? null;
+    const anchorParagraph = nodeElement(current.anchorNode)?.closest("p");
+    const focusParagraph = nodeElement(current.focusNode)?.closest("p");
+    if (
+      !anchorCard ||
+      anchorCard !== focusCard ||
+      !heading.includes("improved transcript") ||
+      !transcript ||
+      anchorParagraph !== transcript ||
+      focusParagraph !== transcript
+    ) {
       setSelection(null);
       setAdded(false);
       return;
@@ -78,7 +105,7 @@ export function Material() {
     setSelection({
       phrase,
       translation: translateDemoPhrase(phrase),
-      example: anchorCard.querySelector("p")?.textContent?.trim() ?? phrase,
+      example: sentenceAtRange(transcript, range) || phrase,
       top,
       left,
     });
@@ -158,21 +185,25 @@ export function Material() {
         </div>
         <p className="material-selection-phrase">“{selection.phrase}”</p>
         <div className="material-selection-translation">
-          <span>Russian translation</span>
+          <span>AI translation · Russian · demo</span>
           <strong lang="ru">{selection.translation}</strong>
         </div>
-        <button
-          className="material-selection-add"
-          type="button"
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={addSelectionToDictionary}
-          disabled={added}
-        >
-          {added ? <Check size={17} aria-hidden="true" /> : <BookmarkPlus size={17} aria-hidden="true" />}
-          {added ? "Added to Dictionary" : "Add to Dictionary"}
-        </button>
+        <div className="material-selection-actions">
+          <span>{added ? "Added to Dictionary" : "Add to Dictionary"}</span>
+          <button
+            className="material-selection-add"
+            type="button"
+            aria-label={added ? "Phrase added to Dictionary" : `Add “${selection.phrase}” to Dictionary`}
+            title={added ? "Added to Dictionary" : "Add to Dictionary"}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={addSelectionToDictionary}
+            disabled={added}
+          >
+            {added ? <Check size={18} aria-hidden="true" /> : <BookmarkPlus size={18} aria-hidden="true" />}
+          </button>
+        </div>
         <span className="material-selection-note" aria-live="polite">
-          {added ? "Saved in this preview." : "Select a word or expression from B."}
+          {added ? "Saved in this preview." : "Select a word or expression from B, then tap the bookmark."}
         </span>
       </div>,
       document.body,
