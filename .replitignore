@@ -3,3 +3,16 @@
 
 # No need to store the pnpm store twice.
 .local
+
+# Generated native outputs and local signing material are not deployment assets.
+/generated-artifacts/
+*.apk
+*.aab
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+credentials.json

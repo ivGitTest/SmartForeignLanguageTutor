@@ -77,3 +77,15 @@ GEMINI.md
 .env.*
 !.env.example
 !.env.*.example
+
+# Android builds and local signing credentials; use EAS-managed signing.
+*.apk
+*.aab
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+credentials.json

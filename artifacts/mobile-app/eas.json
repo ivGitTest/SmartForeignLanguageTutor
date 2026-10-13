@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": ">= 24.13.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "24.13.0",
+      "pnpm": "10.26.1",
+      "developmentClient": false,
+      "distribution": "internal",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "environment": "preview"
+    },
+    "production": {
+      "extends": "base",
+      "environment": "production"
+    }
+  }
+}

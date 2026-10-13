@@ -7,7 +7,14 @@
     "dev": "sh -c 'if [ -n \"$REPLIT_EXPO_SESSION_SECRET\" ]; then pnpm exec create-launch login --session \"$REPLIT_EXPO_SESSION_SECRET\" || true; fi' && EXPO_PACKAGER_PROXY_URL=https://$REPLIT_EXPO_DEV_DOMAIN EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN EXPO_PUBLIC_REPL_ID=$REPL_ID REACT_NATIVE_PACKAGER_HOSTNAME=$REPLIT_DEV_DOMAIN pnpm exec expo start --localhost --port $PORT",
     "build": "node scripts/build.js",
     "serve": "node server/serve.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "eas:login": "pnpm dlx eas-cli@24.13.0 login --device",
+    "eas:whoami": "pnpm dlx eas-cli@24.13.0 whoami",
+    "eas:link": "pnpm dlx eas-cli@24.13.0 init",
+    "build:apk": "pnpm dlx eas-cli@24.13.0 build --platform android --profile preview",
+    "build:apk:production": "pnpm dlx eas-cli@24.13.0 build --platform android --profile production",
+    "build:list": "pnpm dlx eas-cli@24.13.0 build:list --platform android",
+    "start:local": "expo start"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
