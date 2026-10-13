@@ -47,6 +47,7 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+/.conversation/
 
 # Agent memory, instructions and local service notes (not application source)
 .agents/
@@ -65,7 +66,14 @@ GEMINI.md
 /scratch/
 
 # Raw user uploads; application assets must be moved into application directories
-/attached_assets/
+attached_assets/
+
+# Unapproved working drafts stay local; approved app documentation belongs in Git
+drafts/
+/docs/**/*draft*
+/docs/**/*Draft*
+/docs/**/*чернов*
+/docs/**/*Чернов*
 
 # Local diagnostics and generated deliverables
 /logs/
