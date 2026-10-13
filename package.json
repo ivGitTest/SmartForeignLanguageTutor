@@ -8,8 +8,8 @@
     "typecheck": "pnpm --filter @workspace/mobile-app run typecheck"
   },
   "private": true,
-  "dependencies": {},
   "devDependencies": {
+    "@types/react": "~19.2.18",
     "prettier": "^3.9.6"
   }
 }

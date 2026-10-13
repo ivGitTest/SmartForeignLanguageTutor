@@ -107,6 +107,9 @@ importers:
 
   .:
     devDependencies:
+      '@types/react':
+        specifier: ~19.2.18
+        version: 19.2.18
       prettier:
         specifier: ^3.9.6
         version: 3.9.6

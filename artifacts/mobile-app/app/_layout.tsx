@@ -45,6 +45,7 @@ function RootLayoutNav() {
       <Stack.Screen name="word/[id]" options={{ title: "Word card" }} />
       <Stack.Screen name="material/[id]" options={{ title: "Material" }} />
       <Stack.Screen name="settings" options={{ title: "Settings" }} />
+      <Stack.Screen name="key-connection" options={{ title: "Provider key" }} />
       <Stack.Screen name="ai-settings" options={{ title: "AI settings" }} />
     </Stack>
     {backgrounded && <View style={{ position: "absolute", inset: 0, backgroundColor: c.background, alignItems: "center", justifyContent: "center" }}><Body>{APP_NAME}</Body></View>}

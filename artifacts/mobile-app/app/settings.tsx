@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Linking, Platform } from "react-native";
+import { Linking, Pressable, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Host, Picker } from "@expo/ui";
-import * as ScreenCapture from "expo-screen-capture";
-import { Body, Button, Card, Field, Heading, Label, Notice, Screen, useTask } from "@/components/ui";
+import { Body, Button, Card, Heading, Label, Notice, Row, Screen, useTask } from "@/components/ui";
 import { useApp } from "@/core/app-store";
 import { A_MODELS, B_MODELS, defaults } from "@/core/model";
 import { keyStorage } from "@/core/key";
 import { operations } from "@/core/operations";
-import { connectKey, getCatalog, modelPrice, type Catalog } from "@/core/openrouter";
+import { getCatalog, modelPrice, type Catalog } from "@/core/openrouter";
 import { confirm } from "@/core/confirm";
 import { useColors } from "@/hooks/useColors";
 
@@ -16,19 +15,15 @@ export default function SettingsScreen() {
   const { data, repo, active } = useApp();
   const c = useColors();
   const task = useTask();
-  const [key, setKey] = useState("");
-  const [connected, setConnected] = useState(false);
-  const [protectedScreen, setProtectedScreen] = useState(false);
+  const [connected, setConnected] = useState<boolean | null>(null);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [catalogError, setCatalogError] = useState("");
   useFocusEffect(React.useCallback(() => {
-    void keyStorage.has().then(setConnected).catch(() => task.setError("Protected storage could not be read."));
-    if (Platform.OS === "android") void ScreenCapture.preventScreenCaptureAsync("api-key").then(() => setProtectedScreen(true)).catch(() => task.setError("Screen protection is unavailable. Key input is disabled."));
-    return () => {
-      setKey(""); setProtectedScreen(false);
-      if (operations.snapshot()?.label === "Checking OpenRouter key") operations.cancel();
-      if (Platform.OS === "android") void ScreenCapture.allowScreenCaptureAsync("api-key");
-    };
+    let focused = true;
+    setConnected(null);
+    void keyStorage.has().then(value => { if (focused) setConnected(value); })
+      .catch(() => { if (focused) task.setError("Protected storage could not be read."); });
+    return () => { focused = false; };
   }, []));
   useEffect(() => {
     const controller = new AbortController();
@@ -57,59 +52,71 @@ export default function SettingsScreen() {
   function modelSection(label: string, kind: "aModel" | "bModel", choices: readonly string[]) {
     const info = catalog?.models.find(m => m.id === data.settings[kind]);
     return <Card>
-      <Heading small>{label}</Heading>
+      <Label>{label}</Label>
+      <Body style={{ fontFamily: "DMSans_600SemiBold", fontSize: 13 }}>Selected {kind === "aModel" ? "A" : "B"} model</Body>
       <Host matchContents={{ vertical: true }} colorScheme="light" seedColor={c.primary}>
         <Picker selectedValue={data.settings[kind]} enabled={!task.pending} onValueChange={value => void task.run(() => chooseModel(kind, value, choices))}>
           {choices.map(value => <Picker.Item key={value} label={`${value.split("/")[1]}${catalog && !catalog.models.some(m => m.id === value) ? " · unavailable" : ""}`} value={value} />)}
         </Picker>
       </Host>
       <Body muted style={{ fontSize: 12 }}>{data.settings[kind]}</Body>
-      <Body muted style={{ fontSize: 12 }}>{info ? modelPrice(info, kind === "aModel") : catalog ? "This model is unavailable. Requests will be blocked; no automatic replacement." : "Live availability and pricing not verified."}</Body>
-      <Body muted style={{ fontSize: 12 }}>Quality and Android audio compatibility still require real-device qualification.</Body>
+      {kind === "aModel" && <Body muted style={{ fontSize: 12 }}>Purpose: transcription</Body>}
+      <Body muted style={{ fontSize: 12 }}>{info ? modelPrice(info, kind === "aModel") : catalog ? "This model is unavailable. Requests will be blocked; no automatic replacement." : "Rate unavailable · live availability not verified."}</Body>
+      <Body muted style={{ fontSize: 12 }}>Last checked: {catalog ? new Date(catalog.at).toLocaleString() : "never"}</Body>
+      <Body style={{ alignSelf: "flex-start", borderRadius: 30, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: c.accent, color: c.accentForeground, fontFamily: "DMSans_700Bold", fontSize: 11 }}>QUALITY UNVERIFIED</Body>
+      <Body muted style={{ fontSize: 12 }}>{kind === "aModel" ? "Quality and Android audio compatibility still require real-device qualification." : "Meaning preservation and improvement quality still require qualification."}</Body>
     </Card>;
   }
   return <Screen>
-    <Label>MAKE IT WORK FOR YOU</Label><Heading>Settings</Heading>
+    <View style={{ gap: 5 }}>
+      <Label>YOUR SETUP</Label><Heading>Settings</Heading>
+      <Body muted>A few choices, kept deliberately small.</Body>
+    </View>
     <Card>
-      <Heading small>OpenRouter connection</Heading>
-      <Body>{connected ? "Key saved in Android protected storage" : "No key connected"}</Body>
-      <Body muted style={{ fontSize: 12 }}>Use your own key with a spending limit. AI is billed to your OpenRouter account. A saved key is never shown again.</Body>
-      <Button title="Open OpenRouter key settings" secondary onPress={() => void task.run(async () => { try { await Linking.openURL("https://openrouter.ai/settings/keys"); } catch { throw new Error("Could not open OpenRouter in your browser."); } })} />
-      {Platform.OS !== "android" && <Notice>Connect keys in the Android app, not this browser preview. No unencrypted storage fallback is provided.</Notice>}
-      <Field label={connected ? "Replacement API key" : "API key"} value={key} onChangeText={setKey} secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="off" textContentType="none" maxLength={256} editable={protectedScreen && !task.pending} placeholder="Paste your OpenRouter key" />
-      <Body muted style={{ fontSize: 12 }}>Only paste when needed. A third-party keyboard or compromised device can still observe input.</Body>
-      <Button title={task.pending ? "Working…" : connected ? "Verify & replace key" : "Verify & save key"} disabled={!protectedScreen || !key.trim() || task.pending} onPress={() => void task.run(async () => {
-        operations.cancel();
-        await operations.run("Checking OpenRouter key", undefined, (signal) => connectKey(key, signal));
-        setKey(""); setConnected(await keyStorage.has());
+      <Row>
+        <Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1 }}>Provider connection</Body>
+        <Body style={{ fontFamily: "DMSans_700Bold", fontSize: 10, backgroundColor: c.muted, color: c.primary, borderRadius: 30, paddingHorizontal: 10, paddingVertical: 4 }}>{connected === null ? "CHECKING" : connected ? "CONNECTED" : "NOT CONNECTED"}</Body>
+      </Row>
+      <Body muted style={{ fontSize: 12 }}>{connected === null ? "Checking protected key storage…" : connected ? "Key saved in Android protected storage. A saved key is never shown again." : "Connect your own OpenRouter key to use AI."}</Body>
+      <Button title="Connect or manage key" secondary onPress={() => router.push("/key-connection")} />
+    </Card>
+    <View style={{ gap: 9 }}>
+      <Body accessibilityRole="header" style={{ fontFamily: "DMSans_700Bold", fontSize: 17 }}>Models</Body>
+      {modelSection("A · SPEECH TO TEXT", "aModel", A_MODELS)}
+      {modelSection("B · IMPROVEMENT + TRANSLATION", "bModel", B_MODELS)}
+      {!!catalogError && <Notice error>{catalogError}</Notice>}
+      <Body muted style={{ fontSize: 12 }}>Provider routing can affect actual charges.</Body>
+      <Button title="Refresh availability & prices" secondary disabled={task.pending} onPress={() => void task.run(async () => {
+        const result = await getCatalog(new AbortController().signal, true); setCatalog(result); setCatalogError("");
       })} />
-      {connected && <Button title="Remove key from device" secondary destructive disabled={task.pending} onPress={() => void task.run(async () => {
-        if (!await confirm("Remove saved key?", "This cancels active AI requests, but does not revoke the key at OpenRouter.")) return;
-        operations.cancel(); await keyStorage.remove(); setConnected(false); setKey("");
-      })} />}
-      <Body muted style={{ fontSize: 12 }}>If exposure is suspected, revoke the key in OpenRouter, check charges and create a new limited key.</Body>
-    </Card>
-    <Card><Heading small>Data & AI costs</Heading><Body muted>Transcription sends your chosen audio to OpenRouter and the model provider. Other actions send only their source text or selected sentence. Provider retention depends on its policies; zero retention is not promised. Cancellation may still be billed. Learning stays offline.</Body>
-      {data.settings.consent ? <Body>Data-transfer notice accepted</Body> : <Button title="I understand — enable AI requests" secondary onPress={() => void task.run(() => repo.update(d => { d.settings.consent = true; }))} />}
-      <Body muted style={{ fontSize: 12 }}>All learning data is local and not cloud-backed up. Uninstalling the app removes it. Phone OS protection is used; there is no app login.</Body>
-    </Card>
-    {modelSection("B · Improve & translate", "bModel", B_MODELS)}
-    {modelSection("A · Speech recognition", "aModel", A_MODELS)}
-    {catalog && <Body muted style={{ fontSize: 12 }}>Catalog checked {new Date(catalog.at).toLocaleString()}. Provider routing can affect actual charges.</Body>}
-    {!!catalogError && <Notice error>{catalogError}</Notice>}
-    <Button title="Refresh availability & prices" secondary disabled={task.pending} onPress={() => void task.run(async () => {
-      const result = await getCatalog(new AbortController().signal, true); setCatalog(result); setCatalogError("");
-    })} />
-    <Button title="AI instructions & parameters" icon="tune" secondary onPress={() => router.push("/ai-settings")} />
-    <Card><Heading small>Languages & appearance</Heading><Body>Interface · English{"\n"}Native language · Russian{"\n"}Learning · English{"\n"}Improvement · B1 → B2{"\n"}Theme · Light</Body><Body muted style={{ fontSize: 12 }}>Other languages, levels and themes are outside this MVP.</Body></Card>
-    <Button title="Reset settings to defaults" secondary disabled={task.pending} onPress={() => void task.run(async () => {
-      if (!await confirm("Reset settings?", "Restore models, parameters and prompts. Keep your key, data-transfer consent, materials, dictionary and learning progress.")) return;
+    </View>
+    <View style={{ gap: 9 }}>
+      <Body accessibilityRole="header" style={{ fontFamily: "DMSans_700Bold", fontSize: 17 }}>Fixed for this MVP</Body>
+      <Card>
+        {[["Interface", "English"], ["Learning", "English"], ["Native / translation", "Russian"], ["Target", "B1 → B2"], ["Session queue", "Up to 10 cards"], ["Theme", "Light"]].map(([label, value]) =>
+          <Row key={label}><Body style={{ flexShrink: 1 }}>{label}</Body><Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }}>{value}</Body></Row>
+        )}
+      </Card>
+    </View>
+    <Button title="Prompts & parameters" icon="arrow-forward" secondary onPress={() => router.push("/ai-settings")} />
+    <View style={{ gap: 9 }}>
+      <Body accessibilityRole="header" style={{ fontFamily: "DMSans_700Bold", fontSize: 17 }}>Privacy, in plain language</Body>
+      <Card>
+        <Body>Selected audio or text is sent to OpenRouter and the model provider. Their retention may vary. Only what the current step needs is sent.</Body>
+        <Body muted style={{ fontSize: 12 }}>A dedicated provider key with a spending limit is recommended. No fixed budget is guaranteed.</Body>
+        <Body muted style={{ fontSize: 12 }}>AI is billed to your OpenRouter account. Cancellation may still be billed. Learning stays offline.</Body>
+        {data.settings.consent ? <Body>Data-transfer notice accepted</Body> : <Button title="I understand — enable AI requests" secondary onPress={() => void task.run(() => repo.update(d => { d.settings.consent = true; }))} />}
+        <Body muted style={{ fontSize: 12 }}>All learning data is local and not cloud-backed up. Uninstalling the app removes it. Phone OS protection is used; there is no app login.</Body>
+      </Card>
+    </View>
+    <Button title="Restore defaults…" secondary disabled={task.pending} onPress={() => void task.run(async () => {
+      if (!await confirm("Restore settings defaults?", "Models, parameters and prompts reset. The key, materials, Dictionary and learning progress stay unchanged. Data-transfer consent is also kept.")) return;
       await repo.update(d => { d.settings = { ...defaults(), consent: d.settings.consent }; });
     })} />
     {active && <Button title="Cancel active AI request" secondary onPress={() => operations.cancel()} />}
     {!!task.error && <Notice error>{task.error}</Notice>}
-    <Card><Heading small>About</Heading><Body>Developer · Рыбаков Иван</Body><Button title="@ivTelegram" secondary onPress={() => void task.run(async () => {
+    <Card><Label>DEVELOPER</Label><Body>Рыбаков Иван</Body><Pressable accessibilityRole="link" accessibilityLabel="@ivTelegram" style={{ minHeight: 44, justifyContent: "center" }} onPress={() => void task.run(async () => {
       try { await Linking.openURL("https://t.me/ivTelegram"); } catch { throw new Error("Could not open Telegram. Open t.me/ivTelegram in your browser."); }
-    })} /></Card>
+    })}><Body style={{ color: c.primary, fontFamily: "DMSans_600SemiBold" }}>@ivTelegram →</Body></Pressable></Card>
   </Screen>;
 }
