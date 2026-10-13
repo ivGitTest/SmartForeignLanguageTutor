@@ -76,7 +76,7 @@ export function SettingsButton() { return <IconButton name="settings" label="Set
 export function Notice({ children, error = false }: { children: React.ReactNode; error?: boolean }) {
   const c = useColors();
   return <View accessibilityLiveRegion={error ? "assertive" : "polite"} style={{ backgroundColor: error ? c.accent : c.muted, padding: 14, borderRadius: 15 }}>
-    <Body style={{ fontSize: 13, lineHeight: 20, color: error ? c.destructive : c.mutedForeground }}>{children}</Body>
+    <Body selectable style={{ fontSize: 13, lineHeight: 20, color: error ? c.destructive : c.mutedForeground }}>{children}</Body>
   </View>;
 }
 export function useTask() {

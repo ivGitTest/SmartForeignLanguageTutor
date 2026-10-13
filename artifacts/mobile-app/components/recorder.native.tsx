@@ -6,6 +6,8 @@ import { Body, Button, Card, Heading, Notice } from "./ui";
 import { audioFiles } from "../core/audio-files";
 import { confirm } from "../core/confirm";
 import { repository } from "../core/app-store";
+import { recordingSaveMessage } from "../core/local-save-error";
+import { recordingDuration, RecordingDurationError } from "../core/recording-metadata";
 
 export function Recorder({ disabled }: { disabled: boolean }) {
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -23,18 +25,19 @@ export function Recorder({ disabled }: { disabled: boolean }) {
     if (!started.current || stopping.current) return;
     started.current = false; stopping.current = true; setBusy(true);
     try {
-      const seconds = Math.min(120, Math.max(duration.current, recorder.currentTime));
+      const seconds = recordingDuration(duration.current, recorder.currentTime);
       if (recorder.isRecording) await recorder.stop();
       const uri = recorder.uri;
       if (!uri) throw new Error("The recorder did not produce an audio file.");
       if (save) {
+        if (!Number.isFinite(seconds)) throw new RecordingDurationError();
         const draft = await audioFiles.keep(uri, seconds);
         retryDraft.current = draft;
         await repository.update(d => { d.pendingAudio = draft; });
         retryDraft.current = null;
       } else await audioFiles.remove(uri);
-    } catch {
-      setError(retryDraft.current ? "The audio file is retained, but its metadata could not be saved. Retry saving before leaving this screen." : "Could not retain this recording. Check microphone and free storage, then try again.");
+    } catch (error) {
+      setError(retryDraft.current ? recordingSaveMessage(error) : error instanceof RecordingDurationError ? error.message : "Could not retain this recording. Check microphone and free storage, then try again.");
     } finally {
       stopping.current = false; setBusy(false);
       await setAudioModeAsync({ allowsRecording: false, shouldPlayInBackground: false }).catch(() => {});
@@ -80,7 +83,7 @@ export function Recorder({ disabled }: { disabled: boolean }) {
     {!!error && <Notice error>{error}</Notice>}
     {retryDraft.current ? <Button title="Retry saving recording" disabled={busy} onPress={() => {
       setBusy(true);
-      void repository.update(d => { d.pendingAudio = retryDraft.current; }).then(() => { retryDraft.current = null; setError(""); }).catch(() => setError("Local save failed. The audio file is still retained.")).finally(() => setBusy(false));
+      void repository.update(d => { d.pendingAudio = retryDraft.current; }).then(() => { retryDraft.current = null; setError(""); }).catch(error => setError(recordingSaveMessage(error))).finally(() => setBusy(false));
     }} /> : status.isRecording ? <>
       <Button title="Stop recording" icon="stop" disabled={busy} onPress={() => void stop(true)} />
       <Button title="Discard recording" secondary destructive disabled={busy} onPress={() => void stop(false)} />

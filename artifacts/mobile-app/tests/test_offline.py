@@ -44,6 +44,7 @@ def test_material_chain_mocked_success_errors_cancel_and_stale_results():
         "A changes|B is durable|incomplete B|cancelled late|editing the source|chain snapshots|no A without",
     )
     run_typescript(APP / "tests" / "fixtures" / "offline-scenarios.ts", "materials")
+    run_typescript(APP / "tests" / "local-save.test.ts")
 
 
 @pytest.mark.learning

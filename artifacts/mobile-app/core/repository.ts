@@ -1,4 +1,5 @@
 import { dataSchema, initialData, type AppData } from "./model";
+import { localSaveFailure } from "./local-save-error";
 
 export interface Persistence {
   read(): Promise<string | null>;
@@ -29,7 +30,7 @@ export class Repository {
       const result = mutate(draft);
       dataSchema.parse(draft);
       try { await this.persistence.write(JSON.stringify(draft)); }
-      catch { throw new Error("Local save failed. Your previous saved data is unchanged. Keep this screen open and retry."); }
+      catch (error) { throw localSaveFailure(error); }
       this.data = draft;
       this.listeners.forEach(l => l());
       return result;
