@@ -1,0 +1,42 @@
+.materials-compact .elab .stack {
+  gap: 8px;
+}
+
+.materials-compact .elab .stack > .card {
+  padding-block: 10px;
+}
+
+.materials-compact .elab .stack > .card > .row:first-child {
+  align-items: center;
+  gap: 8px;
+}
+
+.materials-compact .elab .stack > .card > .row:first-child > a:first-child {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 8px;
+  min-width: 0;
+}
+
+.materials-compact .elab .stack > .card > .row:first-child .word {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.materials-compact .elab .stack > .card > .row:first-child .micro {
+  margin-top: 0 !important;
+  line-height: 1.3;
+  text-align: right;
+}
+
+.materials-compact .elab .stack > .card > .row:last-child {
+  min-height: 28px;
+  margin-top: 6px !important;
+}
+
+@media (max-width: 380px) {
+  .materials-compact .elab .stack > .card {
+    padding-block: 9px;
+  }
+}
