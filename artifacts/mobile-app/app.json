@@ -1,6 +1,7 @@
 {
   "expo": {
-    "slug": "mobile-app",
+    "slug": "smartlang",
+    "owner": "ivaexpi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -34,6 +35,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "24594e06-57d4-416b-9f3e-5f212b9c2cd5"
+      }
     }
   }
 }
