@@ -75,6 +75,17 @@ drafts/
 /docs/**/*чернов*
 /docs/**/*Чернов*
 
+# Other product-stage artifacts stay in this workspace, not in the mobile MVP repo
+/artifacts/api-server/
+/artifacts/language-prototype/
+/artifacts/mockup-sandbox/
+/lib/
+/scripts/package.json
+/scripts/src/
+/scripts/tsconfig.json
+/tsconfig.json
+/tsconfig.base.json
+
 # Local diagnostics and generated deliverables
 /logs/
 /generated-artifacts/

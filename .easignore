@@ -64,10 +64,14 @@ credentials.json
 *.mobileprovision
 *.apk
 *.aab
-# Only the mobile app and shared workspace packages are needed.
+# Only the mobile app and root pnpm manifests are needed for this build.
 /artifacts/api-server
 /artifacts/language-prototype
 /artifacts/mockup-sandbox
+/lib
+/scripts
+/tsconfig.json
+/tsconfig.base.json
 /docs
 .replit-artifact
 /artifacts/mobile-app/android

@@ -1,6 +1,6 @@
 # Smart Lang Tutor — дизайн-ревью Android MVP
 
-**Статус:** 15 экранов подготовлены для ревью; дизайн ожидает отдельного согласования владельцем до реализации. При ревью WordCard уточнено требование VOC-08 о сохранённом сбросе прогресса.
+**Статус:** макеты экранов согласованы владельцем продукта; приложение реализовано. Исходники React-макетов остаются локально и исключены из Git; переносимые SVG-эскизы сохранены ниже. При ревью WordCard уточнено требование VOC-08 о сохранённом сбросе прогресса.
 
 **Уточнение WordCard:** подпись поля перевода — `Translation`. `Reset progress` в приложении должен после подтверждения сбрасывать реальный сохранённый прогресс, не удаляя карточку; в макете сбрасываются только демонстрационные данные. Пользователь согласовал источник языка в подписи `… expression`: язык обучения, не родной язык. В MVP — `English expression`, направление карточки — English → Russian. При разработке подпись берётся из настоящей настройки языка обучения; переключатель языков в MVP не добавляется.
 
@@ -8,25 +8,25 @@
 
 ## Реестр экранов и маршрутов
 
-React-превью доступны по `/__mockup/preview/english-lab-mvp/{Component}`. Исходники: [папка макетов](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/), [общие экраны/демо-состояние](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/_shared/screens.tsx), [стили](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/_group.css).
+React-превью и исходники остаются в локальном `artifacts/mockup-sandbox`, который исключён из Git. В репозитории сохранены переносимые SVG-эскизы и этот документ ревью.
 
 | Component | UI / функциональные связи | Что проверять |
 |---|---|---|
-| [Dictionary](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/Dictionary.tsx) | UI-08, MODE-01/05, LRN-10 | стартовый список, EN → RU, поиск, динамический resume позиции/оценок |
-| [WordCard](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/WordCard.tsx) | UI-09, VOC-04/05/08 | новая карточка `?new=1`, редактирование по выбранному EN-слову, валидация, источник, подтверждение delete/reset |
-| [Learning](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/Learning.tsx) | UI-10, LRN-01…12 | фиксированная демо-очередь 10 уникальных EN/RU/example карточек, скрытый перевод, 4 оценки |
-| [SessionComplete](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/SessionComplete.tsx) | UI-11, LRN-06/11 | динамический итог/распределение, продолжение новой фиксированной очереди или выход в Dictionary |
-| [Materials](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/Materials.tsx) | UI-03, AUD-03/05/06/08 | список, поиск, стадии, демонстрационные подтверждения удаления, низкое место |
-| [Recording](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/Recording.tsx) | UI-04, AUD-01…08 | явное demo-записывание/таймер/стоп/прослушивание/сохранение или discard свежего аудио |
-| [Material](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/Material.tsx) | UI-05/06, UI-TR-01…05, TXT-01…11, TR-01…09 | сохраняемый для ревью A, 10 000 символов, stale B и Translation, свёрнутый RU блок, переход во Phrase |
-| [Phrase](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/Phrase.tsx) | UI-07, VOC-01…07 | один контекстный перевод и добавление; редактирование доступно только через Dictionary |
-| [Settings](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/Settings.tsx) | UI-12, SET-01…13 | два ограниченных отдельных фиктивных selector, неизвестные тарифы, фиксированные значения, приватность и контакт |
-| [AISettings](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/AISettings.tsx) | UI-13, SET-09…12, REW-02 | утверждённый текст B, свёрнутые редактируемые промпты, отдельные editable параметры Б/перевода, локальные Save/Reset |
-| [FirstLaunch](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/FirstLaunch.tsx) | UI-01, MODE-01, NET-01 | пустой Dictionary, новый ручной ввод, без входа, независимые режимы |
-| [KeyConnection](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/KeyConnection.tsx) | UI-02, SEC-KEY, NET-01 | только вымышленный masked input/статусы, одноразовое demo disclosure, никакого provider запроса |
-| [Confirmations](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/Confirmations.tsx) | UI-14, AUD-08, SEC-DATA-11 | точные границы аудио/материала/текстов/карточек/ключа и отдельный reset |
-| [States](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/States.tsx) | UI-01…14 | нарисованные пустые состояния, offline, mic denial, loading/cancel, translation error/retry, stale/incomplete и storage failure + полный реестр |
-| [FlowMap](../../artifacts/mockup-sandbox/src/components/mockups/english-lab-mvp/FlowMap.tsx) | MODE-01…06, AC-18…20 | независимые режимы, цепочка A → B → RU и все три сценария возобновления |
+| Dictionary | UI-08, MODE-01/05, LRN-10 | стартовый список, EN → RU, поиск, динамический resume позиции/оценок |
+| WordCard | UI-09, VOC-04/05/08 | новая карточка `?new=1`, редактирование по выбранному EN-слову, валидация, источник, подтверждение delete/reset |
+| Learning | UI-10, LRN-01…12 | фиксированная демо-очередь 10 уникальных EN/RU/example карточек, скрытый перевод, 4 оценки |
+| SessionComplete | UI-11, LRN-06/11 | динамический итог/распределение, продолжение новой фиксированной очереди или выход в Dictionary |
+| Materials | UI-03, AUD-03/05/06/08 | список, поиск, стадии, демонстрационные подтверждения удаления, низкое место |
+| Recording | UI-04, AUD-01…08 | явное demo-записывание/таймер/стоп/прослушивание/сохранение или discard свежего аудио |
+| Material | UI-05/06, UI-TR-01…05, TXT-01…11, TR-01…09 | сохраняемый для ревью A, 10 000 символов, stale B и Translation, свёрнутый RU блок, переход во Phrase |
+| Phrase | UI-07, VOC-01…07 | один контекстный перевод и добавление; редактирование доступно только через Dictionary |
+| Settings | UI-12, SET-01…13 | два ограниченных отдельных фиктивных selector, неизвестные тарифы, фиксированные значения, приватность и контакт |
+| AISettings | UI-13, SET-09…12, REW-02 | утверждённый текст B, свёрнутые редактируемые промпты, отдельные editable параметры Б/перевода, локальные Save/Reset |
+| FirstLaunch | UI-01, MODE-01, NET-01 | пустой Dictionary, новый ручной ввод, без входа, независимые режимы |
+| KeyConnection | UI-02, SEC-KEY, NET-01 | только вымышленный masked input/статусы, одноразовое demo disclosure, никакого provider запроса |
+| Confirmations | UI-14, AUD-08, SEC-DATA-11 | точные границы аудио/материала/текстов/карточек/ключа и отдельный reset |
+| States | UI-01…14 | нарисованные пустые состояния, offline, mic denial, loading/cancel, translation error/retry, stale/incomplete и storage failure + полный реестр |
+| FlowMap | MODE-01…06, AC-18…20 | независимые режимы, цепочка A → B → RU и все три сценария возобновления |
 
 ## Ключевые пути и ограничения
 
@@ -55,14 +55,14 @@ Fixed scope: interface EN, learning EN, native RU, B1 → B2, light only; нет
 - **Движение:** короткие transform/opacity переходы, выключаются при `prefers-reduced-motion`.
 - **Demo storage:** неключевые значения сохраняются только локально для интерактивного ревью в browser origin; Save означает запись демо-состояния, не настоящий SQLite/SecureStore.
 
-### Проверить отдельно перед реализацией
+### Проверить перед выпуском
 
-- [ ] Согласовать визуальную систему и каждую группу экранов; требования остаются согласованными, макеты пока не утверждены.
+- [x] Визуальная система и группы экранов просмотрены и согласованы владельцем продукта.
 - [ ] Проверить Android 360×800, 412×915, landscape, safe areas, IME, TalkBack, 200% размер шрифта, контраст и focus order.
 - [ ] Подтвердить совместимость моделей/endpoint и актуальные тарифы. Пока модели вымышлены, тарифы unavailable; провайдерная доступность не проверялась.
 - [ ] Отдельно испытать SQLite, SecureStore/Keystore, TLS, backup исключения, screenshot protection, аудио lifecycle и фактические AC.
 - [ ] Перед первым запросом реализовать одноразовое согласие NET-01/SEC-DATA-06; отказ не блокирует локальные режимы.
-- [ ] Получить визуальное одобрение владельца до интеграции в production app.
+- [x] Получено визуальное одобрение макетов до интеграции в приложение.
 
 ## Portable SVG
 
