@@ -31,6 +31,12 @@ def pytest_collection_modifyitems(items):
         if mode in {"dictionary", "materials", "learning", "navigation"}:
             item.add_marker(pytest.mark.android)
             item.add_marker(getattr(pytest.mark, mode))
+            if not os.environ.get("SMART_LANG_TUTOR_APK"):
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason="Android UI checks run automatically when SMART_LANG_TUTOR_APK is set."
+                    )
+                )
 
 
 @pytest.fixture(scope="session")

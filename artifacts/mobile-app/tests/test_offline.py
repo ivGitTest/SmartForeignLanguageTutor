@@ -8,8 +8,7 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "artifacts" / "mobile-app"
+APP = Path(__file__).resolve().parents[1]
 pytestmark = pytest.mark.offline
 
 
@@ -35,7 +34,7 @@ def test_dictionary_context_selection_normalization_and_fixture_storage():
         APP / "tests" / "domain.test.ts",
         "meaning context|repository serializes|failed save|corrupt data",
     )
-    run_typescript(ROOT / "tests" / "fixtures" / "offline-scenarios.ts", "dictionary")
+    run_typescript(APP / "tests" / "fixtures" / "offline-scenarios.ts", "dictionary")
 
 
 @pytest.mark.materials
@@ -44,7 +43,7 @@ def test_material_chain_mocked_success_errors_cancel_and_stale_results():
         APP / "tests" / "domain.test.ts",
         "A changes|B is durable|incomplete B|cancelled late|editing the source|chain snapshots|no A without",
     )
-    run_typescript(ROOT / "tests" / "fixtures" / "offline-scenarios.ts", "materials")
+    run_typescript(APP / "tests" / "fixtures" / "offline-scenarios.ts", "materials")
 
 
 @pytest.mark.learning

@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { Repository } from "../../artifacts/mobile-app/core/repository";
-import { initialData, dataSchema } from "../../artifacts/mobile-app/core/model";
-import { createMaterialActions } from "../../artifacts/mobile-app/core/material-actions";
-import { startSession } from "../../artifacts/mobile-app/core/learning";
-import { sentenceForSelection } from "../../artifacts/mobile-app/core/selection";
+import { Repository } from "../../core/repository";
+import { initialData, dataSchema } from "../../core/model";
+import { createMaterialActions } from "../../core/material-actions";
+import { startSession } from "../../core/learning";
+import { sentenceForSelection } from "../../core/selection";
 
 const samples = JSON.parse(readFileSync(new URL("./sample-data.json", import.meta.url), "utf8"));
 

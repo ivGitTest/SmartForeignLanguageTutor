@@ -1,6 +1,6 @@
 # Android UI tests
 
-The pytest suite drives the installed Android app through Appium. It covers Dictionary, Materials, Learning, navigation, local storage, and native audio recording. Speech recognition, improvement, translation, and model execution are never started. Opening Settings can read the public model catalog; the tests do not enter or transmit a user key.
+One pytest command runs the offline/domain checks every time. If `SMART_LANG_TUTOR_APK` points to an APK, the same run also checks that an Android target and Appium are ready, installs the APK, and runs the UI checks. The Android checks cover Dictionary, Materials, Learning, navigation, local storage, and native audio recording. Speech recognition, improvement, translation, and model execution are never started. Opening Settings can read the public model catalog; the tests do not enter or transmit a user key.
 
 There are two layers:
 
@@ -16,37 +16,33 @@ The offline layer runs the existing TypeScript domain tests from pytest and adds
 ## Requirements
 
 - Python 3.10 or later and packages from `tests/requirements.txt`
-- Node.js and Appium Server on `PATH`, with the UiAutomator2 driver installed
-- Android SDK Platform Tools (`adb`) and an Android 14+ emulator (API 34+)
-- An APK built by the normal EAS preview workflow
+- pnpm dependencies installed from the repository root (the offline tests call the actual TypeScript app domain)
+- For Android checks only: Node.js, Appium Server, Android SDK Platform Tools, and an Android 14+ emulator (API 34+)
 
 One-time setup:
 
 ```bash
-python3 -m pip install -r tests/requirements.txt
+python3 -m pip install -r artifacts/mobile-app/tests/requirements.txt
 npm install --global appium
 appium driver install uiautomator2
 ```
 
-For local checks without an emulator or APK, run `pnpm install` first, then:
+Run the same command from the repository root in both cases:
 
 ```bash
-bash scripts/run-tests.sh --local
-# equivalent entry point:
-pnpm run test:android --local
+pnpm --filter @workspace/mobile-app run test
 ```
 
-These local checks require a Node.js version that supports `node:sqlite` (the same Node 22.13+ / 24+ setup as the application). They use in-memory databases and simulated responses. No API key is needed.
-
-Start a blank Android emulator, then run from the repository root:
-
+With `SMART_LANG_TUTOR_APK` set and an emulator running, the Android UI checks are added automatically:
 ```bash
 SMART_LANG_TUTOR_APK="/path/to/smart-lang-tutor.apk" \
 ANDROID_SERIAL="emulator-5554" \
-bash scripts/run-tests.sh
+pnpm --filter @workspace/mobile-app run test
 ```
 
 `ANDROID_SERIAL` is the device ID shown by `adb devices`. The script installs the APK as an update (`adb install -r`) and grants microphone permission for the recording test. It never clears application data or uninstalls the app. Use a clean test installation with an empty Dictionary and Materials list: pytest checks both screens first and refuses to modify an app that already contains user data.
+
+Without `SMART_LANG_TUTOR_APK`, the Android tests are reported as skipped and the offline checks still run. This is not a second test suite or a second command: Android checks need a device and installed APK; offline checks run on any machine.
 
 The recording test uses the emulator microphone, creates short local recordings, and deletes them. If a test fails partway through, some test-labelled records may remain; review the emulator before rerunning. Never point the suite at an app with personal data. A physical device is rejected by default; to opt in deliberately, set `SMART_LANG_E2E_ALLOW_PHYSICAL_DEVICE=1` after confirming the Dictionary and Materials are empty. That device's microphone permission and the app's first-use microphone notice may change.
 
@@ -57,15 +53,15 @@ To run only one functional group, keep the APK and emulator variables and pass a
 ```bash
 SMART_LANG_TUTOR_APK="/path/to/smart-lang-tutor.apk" \
 ANDROID_SERIAL="emulator-5554" \
-bash scripts/run-tests.sh tests/test_dictionary.py
+pnpm --filter @workspace/mobile-app run test -- -m dictionary
 ```
 
 Or select both the UI and offline checks for a mode:
 
 ```bash
-bash scripts/run-tests.sh -m dictionary
-bash scripts/run-tests.sh -m materials
-bash scripts/run-tests.sh -m learning
+pnpm --filter @workspace/mobile-app run test -- -m dictionary
+pnpm --filter @workspace/mobile-app run test -- -m materials
+pnpm --filter @workspace/mobile-app run test -- -m learning
 ```
 
 Standard pytest flags work, for example `--junitxml=test-results/android.xml`.

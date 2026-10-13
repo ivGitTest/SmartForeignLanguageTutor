@@ -1,39 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT_DIR"
+APP_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$APP_DIR"
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   cat <<'HELP'
-Run pytest UI tests on an Android emulator.
-
-Offline checks without an APK or emulator:
-  bash scripts/run-tests.sh --local
-
-Required:
-  SMART_LANG_TUTOR_APK=/path/to/app.apk
-  ANDROID_SERIAL=emulator-5554
+Run all pytest checks. Offline/domain checks always run.
+Android UI checks are added automatically when SMART_LANG_TUTOR_APK is set.
 
 Optional:
+  SMART_LANG_TUTOR_APK=/path/to/app.apk
+  ANDROID_SERIAL=emulator-5554  (auto-detected if exactly one emulator is running)
   APPIUM_PORT=4723
   SMART_LANG_E2E_ALLOW_PHYSICAL_DEVICE=1  explicitly allow a physical device
 
 The suite does not clear app data. It refuses to run if Dictionary or Materials
 already contain data.
+
+Run one group with a standard pytest option, for example:
+  bash scripts/test.sh -m dictionary
 HELP
   exit 0
-fi
-
-if [[ "${1:-}" == "--local" ]]; then
-  shift
-  exec python3 -m pytest -q -m "not android" "$@"
-fi
-
-if [[ -z "${SMART_LANG_TUTOR_APK:-}" || ! -f "${SMART_LANG_TUTOR_APK:-}" ]]; then
-  echo "Set SMART_LANG_TUTOR_APK to the Android APK file." >&2
-  echo 'Example: SMART_LANG_TUTOR_APK="/path/to/smart-lang-tutor.apk" ANDROID_SERIAL="emulator-5554" bash scripts/run-tests.sh' >&2
-  exit 2
 fi
 
 if ! command -v python3 >/dev/null 2>&1; then
@@ -42,6 +30,12 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 if ! python3 -c 'import pytest, appium' >/dev/null 2>&1; then
   echo "Install the Python test packages first: python3 -m pip install -r tests/requirements.txt" >&2
+  exit 2
+fi
+
+if [[ -n "${SMART_LANG_TUTOR_APK:-}" ]]; then
+if [[ ! -f "$SMART_LANG_TUTOR_APK" ]]; then
+  echo "Android APK does not exist: $SMART_LANG_TUTOR_APK" >&2
   exit 2
 fi
 if ! command -v appium >/dev/null 2>&1; then
@@ -84,7 +78,9 @@ adb -s "$ANDROID_SERIAL" shell pm grant com.englishlab.mobile android.permission
 
 export SMART_LANG_TUTOR_APK
 export APPIUM_PORT="${APPIUM_PORT:-4723}"
-if [[ "$#" -gt 0 ]]; then
-  exec python3 -m pytest -q "$@"
 fi
-exec python3 -m pytest -q tests
+
+if [[ "$#" -gt 0 ]]; then
+  exec python3 -m pytest -c tests/pytest.ini -q tests "$@"
+fi
+exec python3 -m pytest -c tests/pytest.ini -q tests
