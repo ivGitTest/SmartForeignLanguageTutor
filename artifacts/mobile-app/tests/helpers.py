@@ -96,6 +96,28 @@ def hide_keyboard(driver) -> None:
         pass
 
 
+def assert_app_healthy(driver) -> None:
+    for message in ("Something went wrong", "Please reload the app to continue."):
+        assert not text_is_visible(driver, message), f"Application crashed: {message}"
+
+
+def go_back(driver, method: str) -> None:
+    """Exercise the actual toolbar button, never substitute Android Back for it."""
+    if method == "system":
+        driver.back()
+    elif method == "header":
+        def back_button(current):
+            for label in ("Navigate up", "Go back", "Back"):
+                for element in current.find_elements(AppiumBy.ACCESSIBILITY_ID, label):
+                    if element.is_displayed() and element.is_enabled():
+                        return element
+            return False
+        WebDriverWait(driver, 12).until(back_button).click()
+    else:
+        raise ValueError(f"Unknown back method: {method}")
+    assert_app_healthy(driver)
+
+
 def tap_tab(driver, title: str) -> None:
     # Detail screens are on the root Stack, outside the tab navigator.
     # Return to the tabs before switching modes; do not press a heading that

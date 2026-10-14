@@ -3,14 +3,158 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from selenium.webdriver.support.ui import WebDriverWait
 
-from tests.helpers import fill, hide_keyboard, scroll_to_text, tap, tap_confirm, tap_tab, text_is_visible, wait_accessible, wait_text
+from tests.helpers import (
+    assert_app_healthy, fill, go_back, hide_keyboard, open_word, save_material,
+    scroll_to_text, tap, tap_confirm, tap_tab, text_is_visible, wait_accessible, wait_text,
+)
 
 APP_PACKAGE = "com.englishlab.mobile"
 APP_ROOT = Path(__file__).resolve().parents[1]
+
+# Each page route (not navigator layouts) has an explicit round-trip test below.
+SCREEN_TESTS = {
+    "(tabs)/index": "test_primary_tab_round_trips",
+    "(tabs)/materials": "test_primary_tab_round_trips",
+    "(tabs)/learning": "test_primary_tab_round_trips",
+    "settings": "test_settings_returns_to_originating_tab",
+    "key-connection": "test_nested_settings_round_trip",
+    "ai-settings": "test_nested_settings_round_trip",
+    "word/[id]": "test_word_screen_round_trip",
+    "material/[id]": "test_material_back_returns_to_list",
+    "+not-found": "test_missing_routes_have_a_working_exit",
+}
+
+
+def assert_primary_screen(driver, title):
+    if title == "Learning":
+        WebDriverWait(driver, 12).until(lambda current: any(
+            text_is_visible(current, label) for label in (
+                "Show answer", "How well did you remember?", "Nicely done.",
+                "All caught up", "No cards yet",
+            )
+        ))
+    else:
+        wait_accessible(driver, "Search dictionary" if title == "Dictionary" else "New recording")
+    assert_app_healthy(driver)
+
+
+@pytest.mark.parametrize("origin", ["Dictionary", "Materials", "Learning"])
+@pytest.mark.parametrize("destination", ["Dictionary", "Materials", "Learning"])
+def test_primary_tab_round_trips(android_driver, sample_dictionary, origin, destination):
+    driver = android_driver
+    tap_tab(driver, origin)
+    tap_tab(driver, destination)
+    assert_primary_screen(driver, destination)
+    tap_tab(driver, origin)
+    assert_primary_screen(driver, origin)
+
+
+@pytest.mark.parametrize("origin", ["Dictionary", "Materials", "Learning"])
+@pytest.mark.parametrize("back", ["header", "system"])
+def test_settings_returns_to_originating_tab(android_driver, sample_dictionary, origin, back):
+    driver = android_driver
+    tap_tab(driver, origin)
+    tap(driver, "Settings")
+    wait_text(driver, "Settings")
+    go_back(driver, back)
+    # Check actual screen content, not a tab label which is always visible.
+    assert_primary_screen(driver, origin)
+
+
+@pytest.mark.parametrize("back", ["header", "system"])
+@pytest.mark.parametrize("link,heading", [
+    ("Connect or manage key", "Connect your own key"),
+    ("Prompts & parameters", "B · Improve to B2"),
+])
+def test_nested_settings_round_trip(android_driver, sample_dictionary, link, heading, back):
+    driver = android_driver
+    tap_tab(driver, "Dictionary")
+    tap(driver, "Settings")
+    wait_text(driver, "Settings")
+    tap(driver, link, scroll_text=link)
+    wait_text(driver, heading)
+    assert_app_healthy(driver)
+    go_back(driver, back)
+    wait_accessible(driver, "Connect or manage key")
+    go_back(driver, back)
+    wait_accessible(driver, "Search dictionary")
+
+
+@pytest.mark.parametrize("back", ["header", "system"])
+@pytest.mark.parametrize("kind", ["new", "existing", "unsaved"])
+def test_word_screen_round_trip(android_driver, sample_dictionary, kind, back):
+    driver = android_driver
+    tap_tab(driver, "Dictionary")
+    if kind == "existing":
+        open_word(driver, sample_dictionary["words"][0]["expression"])
+    else:
+        tap(driver, "Add")
+        wait_text(driver, "Add a word")
+        if kind == "unsaved":
+            fill(driver, "English expression", "unsaved navigation draft")
+            hide_keyboard(driver)
+    go_back(driver, back)
+    if kind == "unsaved":
+        wait_text(driver, "Unsaved changes")
+        tap_confirm(driver)
+    wait_accessible(driver, "Search dictionary")
+    assert_app_healthy(driver)
+
+
+@pytest.mark.parametrize("back", ["header", "system"])
+@pytest.mark.parametrize("playing", [False, True], ids=["idle", "playing"])
+def test_material_back_returns_to_list(
+    android_driver, sample_dictionary, material_titles, back, playing
+):
+    driver = android_driver
+    title = f"pytest-navigation-{uuid4().hex[:8]}"
+    tap_tab(driver, "Materials")
+    save_material(driver, title, seconds=6 if playing else 1.8)
+    material_titles.append(title)
+    # First close the material reached after Save, then repeatedly open its list row.
+    for _ in range(3):
+        if playing:
+            tap(driver, "Play audio")
+            wait_accessible(driver, "Pause audio", timeout=3)
+        go_back(driver, back)
+        wait_accessible(driver, f"Open {title}")
+        assert_app_healthy(driver)
+        tap(driver, f"Open {title}", scroll_text=title)
+        wait_text(driver, "Make it your own.")
+        assert wait_accessible(driver, "Material title").get_attribute("text") == title
+    go_back(driver, back)
+    wait_accessible(driver, f"Open {title}")
+    # Also exercise the alternative entry point; no AI requests are made.
+    tap(driver, "Continue last material", scroll_text="Continue last material")
+    wait_text(driver, "Make it your own.")
+    go_back(driver, back)
+    wait_accessible(driver, f"Open {title}")
+    assert_app_healthy(driver)
+
+
+@pytest.mark.parametrize("path,message,exit_label,destination", [
+    ("missing-pytest-screen", "This screen doesn't exist.", "Go to home screen!", "Search dictionary"),
+    ("material/missing-pytest-material", "Material no longer exists", "Materials", "New recording"),
+    ("word/missing-pytest-card", "Card no longer exists", "Dictionary", "Search dictionary"),
+])
+def test_missing_routes_have_a_working_exit(
+    android_driver, sample_dictionary, path, message, exit_label, destination
+):
+    driver = android_driver
+    driver.execute_script("mobile: deepLink", {
+        "url": f"mobile-app:///{path}", "package": APP_PACKAGE,
+    })
+    wait_text(driver, message)
+    assert_app_healthy(driver)
+    # The not-found page is an Expo Link, not one of our accessible Buttons.
+    wait_text(driver, exit_label).click()
+    wait_accessible(driver, destination)
+    assert_app_healthy(driver)
 
 
 def assert_prompt_fits_screen(driver, disclosure: str, field_label: str) -> None:

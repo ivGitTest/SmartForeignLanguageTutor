@@ -9,7 +9,7 @@ There are two layers:
 | Dictionary | Required fields, duplicate detection, create/edit/search/delete, add-card route | Selection context, normalized expressions, populated dictionary and durable storage |
 | Materials | Record/stop/discard/save, title, search, newest-first sorting, resume last material, play/pause, delete audio or whole material | A → B → translation, contextual lookup, failed/partial/cancelled/late responses, stale data and explicit retry |
 | Learning | Reveal, four grades, 10-card completion, switching modes, restart/resume, continue/exit, progress reset | Fixed queue, due dates, SM-2, idempotent ratings, deletion during a session |
-| Navigation/settings | Three modes, nested screens, prompts/temperature save and restore, external link handlers | Parameter/schema validation and SQLite transactions/migrations |
+| Navigation/settings | All page routes; tab round trips; toolbar and Android Back from materials (idle/playing), new/existing word cards, Settings and nested settings; unsaved-card confirmation; missing-route exits; prompts save/restore and external links | Native-player lifecycle regression, page/test inventory, parameter/schema validation and SQLite transactions/migrations |
 
 The offline layer runs the existing TypeScript domain tests from pytest and adds realistic fixture scenarios. It never substitutes a Python copy of the business logic and never calls a provider. Android tests do **not** cover the A/B text-selection interface with a populated transcript: its processing and contextual lookup are covered at the domain boundary with injected responses. External-link tests verify that Android opens a handler and the app can be resumed, not the content/uptime of third-party websites. Speech quality and AI quality are outside this suite.
 
@@ -43,6 +43,21 @@ pnpm --filter @workspace/mobile-app run test
 `ANDROID_SERIAL` is the device ID shown by `adb devices`. The script installs the APK as an update (`adb install -r`) and grants microphone permission for the recording test. It never clears application data or uninstalls the app. Use a clean test installation with an empty Dictionary and Materials list: pytest checks both screens first and refuses to modify an app that already contains user data.
 
 Without `SMART_LANG_TUTOR_APK`, the Android tests are reported as skipped and the offline checks still run. This is not a second test suite or a second command: Android checks need a device and installed APK; offline checks run on any machine.
+
+Run just the navigation checks (including local lifecycle checks and the route inventory):
+
+```bash
+SMART_LANG_TUTOR_APK="/path/to/smart-lang-tutor.apk" \
+ANDROID_SERIAL="emulator-5554" \
+pnpm --filter @workspace/mobile-app run test -m navigation
+```
+
+The toolbar Back tests click the native toolbar button; they do not substitute
+`driver.back()`. Both paths are tested independently. Every `app/**/*.tsx` page
+must be registered in `SCREEN_TESTS` in `test_navigation.py`; the local inventory
+test fails when a page is added without a test registration. The inventory and
+mocked native lifecycle test do not prove that navigation works on a device:
+only an executed APK/UI run can confirm that.
 
 The recording test uses the emulator microphone, creates short local recordings, and deletes them. If a test fails partway through, some test-labelled records may remain; review the emulator before rerunning. Never point the suite at an app with personal data. A physical device is rejected by default; to opt in deliberately, set `SMART_LANG_E2E_ALLOW_PHYSICAL_DEVICE=1` after confirming the Dictionary and Materials are empty. That device's microphone permission and the app's first-use microphone notice may change.
 

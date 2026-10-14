@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { AppState } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useIsFocused } from "expo-router/react-navigation";
 import { Body, Button, Row } from "./ui";
 import { Host, Slider } from "@expo/ui";
 import { View } from "react-native";
@@ -10,7 +10,10 @@ export function AudioPlayer({ uri }: { uri: string }) {
   const player = useAudioPlayer(uri);
   const status = useAudioPlayerStatus(player);
   const c = useColors();
-  useFocusEffect(React.useCallback(() => () => player.pause(), [player]));
+  const focused = useIsFocused();
+  // useAudioPlayer releases its native object on unmount. Never call pause from
+  // a cleanup: the player may already be released when focus cleanup runs.
+  useEffect(() => { if (!focused) player.pause(); }, [focused, player]);
   useEffect(() => {
     const listener = AppState.addEventListener("change", state => { if (state !== "active") player.pause(); });
     return () => listener.remove();

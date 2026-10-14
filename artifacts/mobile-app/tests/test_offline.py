@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import ast
 import shutil
 import subprocess
 from pathlib import Path
@@ -58,3 +59,34 @@ def test_learning_queue_reveal_ratings_resume_and_due_schedule():
 def test_settings_validation_and_sqlite_transactions():
     run_typescript(APP / "tests" / "domain.test.ts", "defaults|invalid ranges")
     run_typescript(APP / "tests" / "sqlite.test.ts")
+
+
+@pytest.mark.navigation
+def test_material_audio_navigation_lifecycle():
+    run_typescript(APP / "tests" / "audio-navigation.test.ts")
+
+
+@pytest.mark.navigation
+def test_every_screen_has_a_registered_android_round_trip():
+    """Fail locally when a page is added without a navigation test registration.
+
+    This is a coverage inventory, not a substitute for running the APK tests.
+    """
+    tree = ast.parse((APP / "tests" / "test_navigation.py").read_text(encoding="utf-8"))
+    registry = next(
+        ast.literal_eval(node.value)
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == "SCREEN_TESTS" for target in node.targets)
+    )
+    routes = {
+        str(path.relative_to(APP / "app").with_suffix(""))
+        for path in (APP / "app").rglob("*.tsx")
+        if path.stem != "_layout"
+    }
+    assert routes == set(registry), (
+        f"Missing navigation tests: {routes - set(registry)}; "
+        f"obsolete route registrations: {set(registry) - routes}"
+    )
+    functions = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}
+    assert set(registry.values()) <= functions
