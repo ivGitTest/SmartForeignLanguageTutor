@@ -16,12 +16,20 @@ APP_ROOT = Path(__file__).resolve().parents[1]
 def assert_prompt_fits_screen(driver, disclosure: str, field_label: str) -> None:
     tap(driver, disclosure, scroll_text=disclosure)
     scroll_to_text(driver, field_label)
-    rect = wait_accessible(driver, field_label).rect
-    screen_width = driver.get_window_size()["width"]
-    assert rect["x"] >= 0, f"{field_label} starts outside the screen."
-    assert rect["x"] + rect["width"] <= screen_width - 10, (
-        f"{field_label} extends outside the {screen_width}px screen."
-    )
+    original = wait_accessible(driver, field_label).get_attribute("text")
+    for value in (original, ("Long instruction with wrapping. " * 30) + ("x" * 200)):
+        if value != original:
+            fill(driver, field_label, value)
+            hide_keyboard(driver)
+        rect = wait_accessible(driver, field_label).rect
+        screen_width = driver.get_window_size()["width"]
+        assert rect["x"] > 0, f"{field_label} starts outside its screen margin."
+        assert rect["x"] + rect["width"] <= screen_width - rect["x"] + 2, (
+            f"{field_label} extends beyond its symmetric horizontal margins "
+            f"on the {screen_width}px screen: {rect}."
+        )
+    fill(driver, field_label, original)
+    hide_keyboard(driver)
 
 
 def assert_app_version_is_present(driver) -> None:
