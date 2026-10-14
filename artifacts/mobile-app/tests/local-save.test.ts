@@ -1,10 +1,10 @@
 /// <reference types="node" />
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dataSchema, initialData } from "../core/model";
+import { dataSchema, initialData, MAX_RECORDING_SIZE_BYTES } from "../core/model";
 import { Repository } from "../core/repository";
 import { localSaveFailure, recordingSaveMessage } from "../core/local-save-error";
-import { recordingDuration } from "../core/recording-metadata";
+import { isValidRecordingFileSize, recordingDuration, repairPendingAudioMetadata } from "../core/recording-metadata";
 
 test("local save diagnostics distinguish database failures without exposing raw details", () => {
   for (const [nativeMessage, code] of [
@@ -29,14 +29,35 @@ test("local save diagnostics distinguish database failures without exposing raw 
 test("invalid recording metadata reports field names but no private values", () => {
   const invalid = dataSchema.safeParse({
     ...initialData(),
-    pendingAudio: { uri: "private-uri", duration: NaN, size: 1024, createdAt: 1 },
+    pendingAudio: { uri: "private-uri", duration: 2, size: null, createdAt: 1 },
   });
   assert.equal(invalid.success, false);
   if (invalid.success) throw new Error("Expected invalid metadata");
   const message = recordingSaveMessage(invalid.error);
   assert.match(message, /INVALID_LOCAL_DATA/);
-  assert.match(message, /pendingAudio.duration/);
+  assert.match(message, /pendingAudio.size/);
   assert.ok(!message.includes("private-uri"));
+});
+
+test("pending recording uses a validated source size and repairs the retained-file recovery marker", () => {
+  const actualSize = 2048;
+  assert.equal(isValidRecordingFileSize(actualSize), true);
+  assert.equal(isValidRecordingFileSize(0), false);
+  assert.equal(isValidRecordingFileSize(1.5), false);
+  assert.equal(isValidRecordingFileSize(Number.NaN), false);
+  assert.equal(isValidRecordingFileSize(MAX_RECORDING_SIZE_BYTES + 1), false);
+
+  const oldMarker = {
+    uri: "file:///private/recordings/recording.m4a",
+    duration: 2,
+    size: null,
+    createdAt: 1,
+  };
+  const repaired = repairPendingAudioMetadata(oldMarker, actualSize);
+  assert.equal(repaired?.size, actualSize);
+  assert.equal(repairPendingAudioMetadata(oldMarker, Number.NaN), null);
+  assert.equal(repairPendingAudioMetadata({ ...oldMarker, duration: Number.NaN }, actualSize), null);
+  assert.equal(dataSchema.safeParse({ ...initialData(), pendingAudio: repaired }).success, true);
 });
 
 test("recording timing ignores unavailable native samples and respects duration limit", () => {

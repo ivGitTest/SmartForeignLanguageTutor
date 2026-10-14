@@ -78,10 +78,19 @@ const sessionSchema = z.object({
   ratings: z.array(z.object({ cardId: z.string(), quality: z.number().int().min(0).max(5) })),
 });
 export type Session = z.infer<typeof sessionSchema>;
+export const MAX_RECORDING_SIZE_BYTES = 10 * 1024 * 1024;
+const recordingSizeSchema = z.number().int().min(1).max(MAX_RECORDING_SIZE_BYTES);
+export const pendingAudioSchema = z.object({
+  uri: z.string(),
+  duration: z.number().min(0).max(120.5),
+  size: recordingSizeSchema,
+  createdAt: date,
+});
+export type PendingAudio = z.infer<typeof pendingAudioSchema>;
 export const dataSchema = z.object({
   version: z.literal(1), cards: z.array(cardSchema), materials: z.array(materialSchema),
   settings: settingsSchema, session: sessionSchema.nullable(), lastMaterialId: z.string().nullable(),
-  pendingAudio: z.object({ uri: z.string(), duration: z.number().min(0).max(120.5), size: z.number().int().min(1).max(10 * 1024 * 1024), createdAt: date }).nullable().default(null),
+  pendingAudio: pendingAudioSchema.nullable().default(null),
   pendingFileDeletes: z.array(z.string()).default([]), microphoneNoticeSeen: z.boolean().default(false),
   reviewEvents: z.array(z.object({
     id: z.string(), cardId: z.string(), sessionId: z.string(), at: date,
