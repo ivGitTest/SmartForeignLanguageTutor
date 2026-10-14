@@ -9,7 +9,7 @@ import { repository } from "../core/app-store";
 import { recordingSaveMessage } from "../core/local-save-error";
 import { recordingDuration, RecordingDurationError } from "../core/recording-metadata";
 
-export function Recorder({ disabled }: { disabled: boolean }) {
+export function Recorder({ disabled, visible = true }: { disabled: boolean; visible?: boolean }) {
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const status = useAudioRecorderState(recorder, 200);
   const started = useRef(false);
@@ -75,6 +75,7 @@ export function Recorder({ disabled }: { disabled: boolean }) {
     } catch (e) { setError(e instanceof Error && /^(Microphone|Storage space)/.test(e.message) ? e.message : "Could not start recording. Check microphone permission and free storage."); }
     finally { setBusy(false); }
   }
+  if (!visible) return null;
   return <Card>
     <Heading small>{status.isRecording ? "Recording…" : "Speak naturally."}</Heading>
     <Body muted>One speaker · English · up to 2 minutes</Body>

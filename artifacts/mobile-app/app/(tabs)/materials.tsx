@@ -34,6 +34,7 @@ export default function Materials() {
   return <FlatList data={materials} keyExtractor={m => m.id} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" style={{ flex: 1, backgroundColor: c.background }} contentContainerStyle={{ padding: 20, paddingBottom: 30, gap: 10, width: "100%", maxWidth: 640, alignSelf: "center" }}
     ListHeaderComponent={<View style={{ gap: 18, paddingBottom: 8 }}>
       <View><Label>FROM SPEECH TO CONFIDENCE</Label><Heading>Materials</Heading><Body muted>Record. Refine. Make it yours.</Body></View>
+      <Recorder disabled={!!active || task.pending || !!data.pendingAudio} visible={!data.pendingAudio} />
       {data.pendingAudio ? <Card><Heading small>Keep this recording?</Heading><Body muted>{data.pendingAudio.duration.toFixed(1)}s · {(data.pendingAudio.size / 1024).toFixed(0)} KiB</Body>
         <AudioPlayer uri={data.pendingAudio.uri} />
         <Button title="Save recording" disabled={task.pending} icon="check" onPress={() => void task.run(saveRecording)} />
@@ -43,7 +44,7 @@ export default function Materials() {
           await audioFiles.clearRecovery();
           await flushDeletedFiles(repo);
         })} />
-      </Card> : <Recorder disabled={!!active || task.pending} />}
+      </Card> : null}
       {!!task.error && <Notice error>{task.error}</Notice>}
       {active && <Notice>{active.label}. You can switch modes; keep the app in the foreground.</Notice>}
     {data.lastMaterialId && data.materials.some(m => m.id === data.lastMaterialId) && <Button title="Continue last material" secondary onPress={() => router.push(`/material/${data.lastMaterialId}`)} />}

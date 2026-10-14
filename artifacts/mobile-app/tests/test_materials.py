@@ -40,12 +40,16 @@ def test_record_discard_save_search_resume_sort_and_delete(
     time.sleep(1.8)
     tap(driver, "Discard recording")
     wait_accessible(driver, "New recording")
+    assert not text_is_visible(driver, "Something went wrong")
+    assert not text_is_visible(driver, "Please reload the app to continue.")
     assert text_is_visible(driver, "Your materials · 0")
 
     # Stopping creates a pending recording; discarding it also needs no confirmation.
     record_to_pending(driver)
     tap(driver, "Discard recording")
     wait_accessible(driver, "New recording")
+    assert not text_is_visible(driver, "Something went wrong")
+    assert not text_is_visible(driver, "Please reload the app to continue.")
     assert text_is_visible(driver, "Your materials · 0")
 
     # Save two native recordings so that sort order and last-material navigation are real.
