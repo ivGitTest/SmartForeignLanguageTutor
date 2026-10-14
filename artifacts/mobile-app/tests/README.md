@@ -7,7 +7,7 @@ There are two layers:
 | Group | Android UI checks | Offline checks using the real application domain |
 | --- | --- | --- |
 | Dictionary | Required fields, duplicate detection, create/edit/search/delete, add-card route | Selection context, normalized expressions, populated dictionary and durable storage |
-| Materials | Record/stop/discard/save, title, search, newest-first sorting, resume last material, play/pause, delete audio or whole material | A → B → translation, contextual lookup, failed/partial/cancelled/late responses, stale data and explicit retry |
+| Materials | Record/stop/discard/save, title, search, newest-first sorting, resume last material, play/pause, delete audio or whole material | A → B → translation, B-only contextual selection, failed/partial/cancelled/late responses, stale data and explicit retry |
 | Learning | Reveal, four grades, 10-card completion, switching modes, restart/resume, continue/exit, progress reset | Fixed queue, due dates, SM-2, idempotent ratings, deletion during a session |
 | Navigation/settings | All page routes; tab round trips; toolbar and Android Back from materials (idle/playing), new/existing word cards, Settings and nested settings; unsaved-card confirmation; missing-route exits; prompts save/restore and external links | Native-player lifecycle regression, page/test inventory, parameter/schema validation and SQLite transactions/migrations |
 

@@ -66,6 +66,11 @@ def test_material_audio_navigation_lifecycle():
     run_typescript(APP / "tests" / "audio-navigation.test.ts")
 
 
+@pytest.mark.materials
+def test_contextual_dictionary_selection_is_available_only_in_b():
+    run_typescript(APP / "tests" / "material-selection.test.ts")
+
+
 @pytest.mark.navigation
 def test_every_screen_has_a_registered_android_round_trip():
     """Fail locally when a page is added without a navigation test registration.

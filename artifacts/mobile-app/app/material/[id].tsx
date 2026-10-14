@@ -12,9 +12,8 @@ import { operations } from "@/core/operations";
 import { deleteMaterial } from "@/core/material-delete";
 import { confirm } from "@/core/confirm";
 import { speak, stopSpeaking } from "@/core/speech";
-import { sentenceForSelection } from "@/core/selection";
 
-type Selection = { expression: string; sentence: string; source: "a" | "b"; text: string };
+type Selection = { expression: string; sentence: string; text: string };
 export default function MaterialScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, repo, active } = useApp();
@@ -53,14 +52,14 @@ export default function MaterialScreen() {
     } catch { setSaveError("A could not be saved. Your draft is still shown below. Retry saving before leaving."); }
     finally { saveRef.current--; setSaveCount(saveRef.current); }
   }
-  function select(expression: string, sentence: string, source: "a" | "b") {
-    if (selection?.expression === expression && selection.source === source && selection.text === m![source]) return;
+  function select(expression: string, sentence: string) {
+    if (selection?.expression === expression && selection.text === m!.b) return;
     selectionRef.current++;
-    setSelection({ expression, sentence, source, text: m![source] });
+    setSelection({ expression, sentence, text: m!.b });
     setContextTranslation(""); setDuplicate(null); setAdded(false);
   }
   async function addCard(separate = false) {
-    if (!selection || selection.source !== "b" || !contextTranslation) return;
+    if (!selection || !contextTranslation) return;
     const latest = repo.snapshot();
     const source = latest.materials.find(x => x.id === id);
     if (!source || source.b !== selection.text || bIsStale(source, latest.settings)) throw new Error("B changed. Select and translate the expression again.");
@@ -94,10 +93,7 @@ export default function MaterialScreen() {
       {!!m.aModelUsed && <Body muted style={{ fontSize: 11 }}>{m.aModelUsed} · {new Date(m.aCreatedAt).toLocaleString("en-GB")}{m.aEdited ? " · edited" : ""}</Body>}
       <Body muted>Verbatim transcription. Edit it before improving.</Body>
       <Field label="A · editable transcript" value={a} multiline style={{ minHeight: 150 }} maxLength={10000}
-        onChangeText={v => void saveA(v)} onSelectionChange={e => {
-          const selected = sentenceForSelection(a, e.nativeEvent.selection.start, e.nativeEvent.selection.end);
-          if (selected && a === m.a) select(selected.expression, selected.sentence, "a");
-        }} />
+        onChangeText={v => void saveA(v)} />
       <Body muted style={{ fontSize: 12 }}>{saveCount ? "Saving A…" : saveError ? "Draft not saved" : "A saved locally"}</Body>
       {!!saveError && <><Notice error>{saveError}</Notice><Button title="Retry saving A" secondary onPress={() => void saveA(a)} /></>}
       <Button title={m.b ? "Improve again · B2" : "Improve to B2 · B"} disabled={busy || !m.a.trim() || a !== m.a || !!saveError} icon="auto-fix-high" onPress={() => void task.run(() => generateB(id))} />
@@ -107,7 +103,7 @@ export default function MaterialScreen() {
       <Body muted>B2 English · select a word or expression to translate it.</Body>
       {!!m.bModelUsed && <Body muted style={{ fontSize: 11 }}>{m.bModelUsed} · {new Date(m.bCreatedAt).toLocaleString("en-GB")}</Body>}
       {stale && <Notice>B is out of date after changes to A or its AI settings. Improve A again to create a new B.</Notice>}
-      <SelectableTranscript text={m.b} onSelect={(expression, sentence) => { if (!stale) select(expression, sentence, "b"); }} />
+      <SelectableTranscript text={m.b} onSelect={(expression, sentence) => { if (!stale) select(expression, sentence); }} />
       <Disclosure key={`translation-${m.bVersion}`} label={`Translation · Russian · ${m.translation ? "Saved" : m.translationError ? "Error" : "Not created"}`}>
         {m.translation ? <><Body
           accessibilityLabel="Russian translation"
@@ -119,13 +115,12 @@ export default function MaterialScreen() {
       </Disclosure>
     </Card>}
     {selection && <Card>
-      <Row><Heading small>{selection.expression}</Heading><IconButton name={added ? "bookmark" : "bookmark-add"} label={added ? "Added to Dictionary" : "Add expression to Dictionary"} disabled={selection.source !== "b" || !contextTranslation || busy || added} onPress={() => void task.run(() => addCard())} /></Row>
+      <Row><Heading small>{selection.expression}</Heading><IconButton name={added ? "bookmark" : "bookmark-add"} label={added ? "Added to Dictionary" : "Add expression to Dictionary"} disabled={!contextTranslation || busy || added} onPress={() => void task.run(() => addCard())} /></Row>
       {contextTranslation ? <Body>{contextTranslation}</Body> : <Button title="Translate selection" secondary disabled={busy} onPress={() => void task.run(async () => {
         const version = selectionRef.current;
-        const result = await translateExpression(id, selection.expression, selection.sentence, selection.text, selection.source);
+        const result = await translateExpression(id, selection.expression, selection.sentence, selection.text, "b");
         if (version === selectionRef.current) setContextTranslation(result);
       })} />}
-      {selection.source === "a" && <Body muted style={{ fontSize: 12 }}>To add this expression to Dictionary, select it in B.</Body>}
       {added && <Body muted>Added to Dictionary. You can edit it there.</Body>}
       {duplicate && <><Notice>This expression is already in Dictionary.</Notice><Button title="Open existing card" secondary onPress={() => router.push(`/word/${duplicate}`)} /><Button title="Add a separate context" disabled={busy} onPress={() => void task.run(() => addCard(true))} /></>}
     </Card>}
