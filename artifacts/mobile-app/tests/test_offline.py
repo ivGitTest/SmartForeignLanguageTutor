@@ -90,3 +90,26 @@ def test_every_screen_has_a_registered_android_round_trip():
     )
     functions = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}
     assert set(registry.values()) <= functions
+
+
+@pytest.mark.materials
+def test_russian_translation_text_is_constrained_to_the_disclosure_width():
+    """Protect the Android B-screen translation from intrinsic-width overflow."""
+    source = (APP / "app" / "material" / "[id].tsx").read_text(encoding="utf-8")
+    translation = re.search(
+        r'<Body\s+accessibilityLabel="Russian translation"(?P<props>.*?)>'
+        r'\{m\.translation\}</Body>',
+        source,
+        flags=re.DOTALL,
+    )
+    assert translation, "The saved Russian translation needs a dedicated, testable text field."
+    for constraint in (
+        'width: "100%"',
+        'maxWidth: "100%"',
+        "minWidth: 0",
+        "flexShrink: 1",
+        'alignSelf: "stretch"',
+    ):
+        assert constraint in translation.group("props"), (
+            f"Russian translation must retain its width constraint: {constraint}"
+        )

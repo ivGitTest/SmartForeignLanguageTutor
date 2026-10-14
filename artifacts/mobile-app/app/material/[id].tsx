@@ -109,7 +109,11 @@ export default function MaterialScreen() {
       {stale && <Notice>B is out of date after changes to A or its AI settings. Improve A again to create a new B.</Notice>}
       <SelectableTranscript text={m.b} onSelect={(expression, sentence) => { if (!stale) select(expression, sentence, "b"); }} />
       <Disclosure key={`translation-${m.bVersion}`} label={`Translation · Russian · ${m.translation ? "Saved" : m.translationError ? "Error" : "Not created"}`}>
-        {m.translation ? <><Body selectable>{m.translation}</Body>{translationIsStale(m, data.settings) && <Notice>Translation is out of date.</Notice>}</> : <Body muted>{active?.materialId === id ? "Translation is being requested after B." : "Translation has not been created yet."}</Body>}
+        {m.translation ? <><Body
+          accessibilityLabel="Russian translation"
+          selectable
+          style={{ width: "100%", maxWidth: "100%", minWidth: 0, flexShrink: 1, alignSelf: "stretch" }}
+        >{m.translation}</Body>{translationIsStale(m, data.settings) && <Notice>Translation is out of date.</Notice>}</> : <Body muted>{active?.materialId === id ? "Translation is being requested after B." : "Translation has not been created yet."}</Body>}
         {!!m.translationError && <Notice error>{m.translationError}</Notice>}
         <Button title={m.translation ? "Translate again" : "Retry Translation"} secondary disabled={busy || stale} onPress={() => void task.run(() => retryTranslation(id))} />
       </Disclosure>
