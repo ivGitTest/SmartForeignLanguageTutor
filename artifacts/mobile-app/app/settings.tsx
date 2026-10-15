@@ -71,7 +71,6 @@ export default function SettingsScreen() {
   return <Screen>
     <View style={{ gap: 5 }}>
       <Label>YOUR SETUP</Label><Heading>Settings</Heading>
-      <Body muted>A few choices, kept deliberately small.</Body>
     </View>
     <View style={{ gap: 9 }}>
       <Body accessibilityRole="header" style={{ fontFamily: "DMSans_700Bold", fontSize: 17 }}>Privacy, in plain language</Body>
