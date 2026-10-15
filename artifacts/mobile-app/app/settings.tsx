@@ -73,6 +73,16 @@ export default function SettingsScreen() {
       <Label>YOUR SETUP</Label><Heading>Settings</Heading>
       <Body muted>A few choices, kept deliberately small.</Body>
     </View>
+    <View style={{ gap: 9 }}>
+      <Body accessibilityRole="header" style={{ fontFamily: "DMSans_700Bold", fontSize: 17 }}>Privacy, in plain language</Body>
+      <Card>
+        <Body>Selected audio or text is sent to OpenRouter and the model provider. Their retention may vary. Only what the current step needs is sent.</Body>
+        <Body muted style={{ fontSize: 12 }}>A dedicated provider key with a spending limit is recommended. No fixed budget is guaranteed.</Body>
+        <Body muted style={{ fontSize: 12 }}>AI is billed to your OpenRouter account. Cancellation may still be billed. Learning stays offline.</Body>
+        {data.settings.consent ? <Body>Data-transfer notice accepted</Body> : <Button title="I understand — enable AI requests" secondary onPress={() => void task.run(() => repo.update(d => { d.settings.consent = true; }))} />}
+        <Body muted style={{ fontSize: 12 }}>All learning data is local and not cloud-backed up. Uninstalling the app removes it. Phone OS protection is used; there is no app login.</Body>
+      </Card>
+    </View>
     <Card>
       <Row>
         <Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1 }}>Provider connection</Body>
@@ -97,16 +107,6 @@ export default function SettingsScreen() {
         {[["Interface", "English"], ["Learning", "English"], ["Native / translation", "Russian"], ["Target", "B1 → B2"], ["Session queue", "Up to 10 cards"], ["Theme", "Light"]].map(([label, value]) =>
           <Row key={label}><Body style={{ flexShrink: 1 }}>{label}</Body><Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }}>{value}</Body></Row>
         )}
-      </Card>
-    </View>
-    <View style={{ gap: 9 }}>
-      <Body accessibilityRole="header" style={{ fontFamily: "DMSans_700Bold", fontSize: 17 }}>Privacy, in plain language</Body>
-      <Card>
-        <Body>Selected audio or text is sent to OpenRouter and the model provider. Their retention may vary. Only what the current step needs is sent.</Body>
-        <Body muted style={{ fontSize: 12 }}>A dedicated provider key with a spending limit is recommended. No fixed budget is guaranteed.</Body>
-        <Body muted style={{ fontSize: 12 }}>AI is billed to your OpenRouter account. Cancellation may still be billed. Learning stays offline.</Body>
-        {data.settings.consent ? <Body>Data-transfer notice accepted</Body> : <Button title="I understand — enable AI requests" secondary onPress={() => void task.run(() => repo.update(d => { d.settings.consent = true; }))} />}
-        <Body muted style={{ fontSize: 12 }}>All learning data is local and not cloud-backed up. Uninstalling the app removes it. Phone OS protection is used; there is no app login.</Body>
       </Card>
     </View>
     <Button title="Restore defaults…" secondary disabled={task.pending} onPress={() => void task.run(async () => {
