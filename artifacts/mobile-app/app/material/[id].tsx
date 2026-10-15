@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { Body, Busy, Button, Card, Field, Heading, IconButton, Label, Notice, Row, Screen, useTask } from "@/components/ui";
+import { Body, Busy, Button, Card, Field, Heading, IconButton, Notice, Row, Screen, useTask } from "@/components/ui";
 import { AudioPlayer } from "@/components/audio-player";
 import { Disclosure } from "@/components/disclosure";
 import { SelectableTranscript } from "@/components/selectable-transcript";
@@ -74,7 +74,7 @@ export default function MaterialScreen() {
     setAdded(true); setDuplicate(null);
   }
   return <Screen>
-    <View><Label>AUDIO → A → B → TRANSLATION</Label><Heading>Make it your own.</Heading></View>
+    <Heading>Make it your own.</Heading>
     <Card>
       <Field label="Material title" labelHidden value={title} onChangeText={setTitle} maxLength={160} />
       {title !== m.title && <Button title="Save title" secondary disabled={task.pending} onPress={() => void task.run(() => repo.update(d => {

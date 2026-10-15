@@ -88,6 +88,13 @@ def test_material_title_caption_is_hidden_but_kept_accessible():
 
 
 @pytest.mark.materials
+def test_material_detail_hides_decorative_workflow_label():
+    source = (APP / "app" / "material" / "[id].tsx").read_text(encoding="utf-8")
+    assert "AUDIO → A → B → TRANSLATION" not in source
+    assert "<Heading>Make it your own.</Heading>" in source
+
+
+@pytest.mark.materials
 def test_material_chain_mocked_success_errors_cancel_and_stale_results():
     run_typescript(
         APP / "tests" / "domain.test.ts",
