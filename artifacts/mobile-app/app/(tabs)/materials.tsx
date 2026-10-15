@@ -10,19 +10,20 @@ import { audioFiles } from "@/core/audio-files";
 import { id, type Material } from "@/core/model";
 import { useColors } from "@/hooks/useColors";
 import { flushDeletedFiles } from "@/core/file-maintenance";
+import { formatRecordingTitle, titleForMaterial } from "@/core/recording-title";
 
 export default function Materials() {
   const { data, repo, active } = useApp();
   const c = useColors();
   const [query, setQuery] = useState("");
   const task = useTask();
-  const materials = data.materials.filter(m => `${m.title} ${m.a} ${m.b}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())).sort((a, b) => b.createdAt - a.createdAt);
+  const materials = data.materials.filter(m => `${titleForMaterial(m)} ${m.a} ${m.b}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())).sort((a, b) => b.createdAt - a.createdAt);
   async function saveRecording() {
     const materialId = id();
     await repo.update(d => {
       if (!d.pendingAudio) throw new Error("No recording is awaiting save.");
       const { createdAt, ...audio } = d.pendingAudio;
-      const m: Material = { id: materialId, createdAt, title: `Recording · ${new Date(createdAt).toLocaleDateString("en-GB")}`, audio,
+      const m: Material = { id: materialId, createdAt, title: formatRecordingTitle(createdAt, audio.duration), audio,
         a: "", aRevision: 0, aEdited: false, b: "", bARevision: 0, bFingerprint: "", bVersion: 0, bModelUsed: "", bCreatedAt: 0,
         translation: "", translationFingerprint: "", translationLanguage: "ru", translationError: "", incomplete: "", cost: 0, costKnown: false, pendingAI: null, lastAIError: "",
         aModelUsed: "", aCreatedAt: 0, aTemperatureUsed: 0, bSourceA: "", translationBVersion: 0, translationCreatedAt: 0 };
@@ -56,14 +57,15 @@ export default function Materials() {
       <View style={{ height: 1, backgroundColor: c.border }} />
     </View>}
     renderItem={({ item }) => {
+      const title = titleForMaterial(item);
       const dateAndDuration = `${new Date(item.createdAt).toLocaleDateString("en-GB")} · ${new Date(item.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}${item.audio ? ` · ${Math.round(item.audio.duration)}s` : " · audio removed"}`;
       const attributes = [item.audio && "Audio", item.a && "A", item.b && "B", item.translation && "Translation"].filter(Boolean).join(" · ");
-      return <Pressable accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => { void repo.update(d => { d.lastMaterialId = item.id; }); router.push(`/material/${item.id}`); }}>
+      return <Pressable accessibilityRole="button" accessibilityLabel={`Open ${title}`} onPress={() => { void repo.update(d => { d.lastMaterialId = item.id; }); router.push(`/material/${item.id}`); }}>
         <Card style={{ paddingVertical: 12, paddingHorizontal: 14, gap: 4 }}>
-          <Row><Body numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, fontFamily: "DMSans_700Bold" }}>{item.title}</Body><MaterialIcons name="chevron-right" size={20} color={c.mutedForeground} /></Row>
+          <Row><Body numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, fontFamily: "DMSans_700Bold" }}>{title}</Body><MaterialIcons name="chevron-right" size={20} color={c.mutedForeground} /></Row>
           <Row style={{ gap: 6 }}>
-            <Body accessibilityLabel={`Date and duration for ${item.title}: ${dateAndDuration}`} muted numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, minWidth: 0, fontSize: 10, lineHeight: 14 }}>{dateAndDuration}</Body>
-            <Body accessibilityLabel={`Available content for ${item.title}: ${attributes}`} muted numberOfLines={1} style={{ flexShrink: 0, fontSize: 10, lineHeight: 14, textAlign: "right" }}>{attributes}</Body>
+            <Body accessibilityLabel={`Date and duration for ${title}: ${dateAndDuration}`} muted numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, minWidth: 0, fontSize: 10, lineHeight: 14 }}>{dateAndDuration}</Body>
+            <Body accessibilityLabel={`Available content for ${title}: ${attributes}`} muted numberOfLines={1} style={{ flexShrink: 0, fontSize: 10, lineHeight: 14, textAlign: "right" }}>{attributes}</Body>
           </Row>
         </Card>
       </Pressable>;

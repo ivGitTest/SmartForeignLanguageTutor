@@ -12,6 +12,7 @@ import { operations } from "@/core/operations";
 import { deleteMaterial } from "@/core/material-delete";
 import { confirm } from "@/core/confirm";
 import { speak, stopSpeaking } from "@/core/speech";
+import { titleForMaterial } from "@/core/recording-title";
 
 type Selection = { expression: string; sentence: string; text: string };
 export default function MaterialScreen() {
@@ -20,7 +21,6 @@ export default function MaterialScreen() {
   const m = data.materials.find(m => m.id === id);
   const task = useTask();
   const [a, setA] = useState(m?.a ?? "");
-  const [title, setTitle] = useState(m?.title ?? "");
   const [saveCount, setSaveCount] = useState(0);
   const saveRef = useRef(0);
   const [saveError, setSaveError] = useState("");
@@ -37,6 +37,7 @@ export default function MaterialScreen() {
     setSelection(null); setContextTranslation(""); setDuplicate(null); setAdded(false);
   }, [m?.bVersion, m?.aRevision]);
   if (!m) return <Screen><Heading small>Material no longer exists</Heading><Button title="Materials" onPress={() => router.replace("/materials")} /></Screen>;
+  const materialTitle = titleForMaterial(m);
   const stale = bIsStale(m, data.settings);
   const busy = !!active || task.pending || !!saveCount;
   async function saveA(value: string) {
@@ -74,13 +75,8 @@ export default function MaterialScreen() {
     setAdded(true); setDuplicate(null);
   }
   return <Screen>
-    <Heading>Make it your own.</Heading>
+    <Heading small accessibilityLabel={`Material title: ${materialTitle}`}>{materialTitle}</Heading>
     <Card>
-      <Field label="Material title" labelHidden value={title} onChangeText={setTitle} maxLength={160} />
-      {title !== m.title && <Button title="Save title" secondary disabled={task.pending} onPress={() => void task.run(() => repo.update(d => {
-        if (!title.trim()) throw new Error("Enter a title.");
-        const material = d.materials.find(x => x.id === id); if (material) material.title = title.trim();
-      }))} />}
       <Body muted>{new Date(m.createdAt).toLocaleString("en-GB")}{m.audio ? ` · ${Math.round(m.audio.duration)}s` : ""}</Body>
       {m.audio ? <AudioPlayer uri={m.audio.uri} /> : <Notice>Audio was removed. Your saved texts are retained; re-transcription is unavailable.</Notice>}
       <Button title={m.a ? "Transcribe again · A" : "Transcribe · A"} icon="notes" disabled={busy || !m.audio} onPress={() => void task.run(async () => {
@@ -154,6 +150,10 @@ export default function MaterialScreen() {
       })} />}
       {m.audio && <Button title="Delete audio only" secondary destructive disabled={task.pending} onPress={() => void task.run(async () => {
         if (!await confirm("Delete audio?", "A, B, Translation and dictionary cards will remain. The audio cannot be recovered.")) return;
+        await repo.update(d => {
+          const material = d.materials.find(x => x.id === id);
+          if (material?.audio) material.title = titleForMaterial(material);
+        });
         await deleteMaterial(id, true);
       })} />}
       <Button title="Delete material and texts" secondary destructive disabled={task.pending} onPress={() => void task.run(async () => {

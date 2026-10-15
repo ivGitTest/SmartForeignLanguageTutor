@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from uuid import uuid4
+import re
 
 from appium.webdriver.common.appiumby import AppiumBy
 
@@ -25,10 +25,6 @@ def test_record_discard_save_search_resume_sort_and_delete(
     android_driver, material_titles, sample_dictionary
 ):
     driver = android_driver
-    suffix = uuid4().hex[:8]
-    older = f"pytest-material-{suffix}-older"
-    newer = f"pytest-material-{suffix}-newer"
-
     tap_tab(driver, "Materials")
     wait_text(driver, "A place for your English")
 
@@ -53,12 +49,14 @@ def test_record_discard_save_search_resume_sort_and_delete(
     assert text_is_visible(driver, "Your materials · 0")
 
     # Save two native recordings so that sort order and last-material navigation are real.
-    save_material(driver, older, seconds=4)
+    older = save_material(driver, seconds=4)
     material_titles.append(older)
     tap_tab(driver, "Materials")
     time.sleep(0.15)
-    save_material(driver, newer)
+    newer = save_material(driver)
     material_titles.append(newer)
+    assert re.fullmatch(r"\d{2}\.\d{2}\.\d{4}/\d{2}:\d{2}:\d{2}/\d+s", older)
+    assert re.fullmatch(r"\d{2}\.\d{2}\.\d{4}/\d{2}:\d{2}:\d{2}/\d+s", newer)
     tap_tab(driver, "Materials")
     wait_text(driver, "Your materials · 2")
     assert text_is_visible(driver, "Newest first")
@@ -92,17 +90,16 @@ def test_record_discard_save_search_resume_sort_and_delete(
     fill(driver, "Search materials", "")
     hide_keyboard(driver)
     tap(driver, "Continue last material", scroll_text="Continue last material")
-    wait_text(driver, "Make it your own.")
-    title_field = wait_accessible(driver, "Material title")
-    assert title_field.get_attribute("text") == newer
+    wait_accessible(driver, f"Material title: {newer}")
+    assert not driver.find_elements(AppiumBy.ACCESSIBILITY_ID, "Material title")
+    assert not driver.find_elements(AppiumBy.ACCESSIBILITY_ID, "Save title")
 
     tap_tab(driver, "Materials")
     tap(driver, f"Open {older}", scroll_text=older)
-    wait_text(driver, "Make it your own.")
+    wait_accessible(driver, f"Material title: {older}")
     tap_tab(driver, "Materials")
     tap(driver, "Continue last material", scroll_text="Continue last material")
-    wait_text(driver, "Make it your own.")
-    assert wait_accessible(driver, "Material title").get_attribute("text") == older
+    wait_accessible(driver, f"Material title: {older}")
 
     # Playback is local. Never press Transcribe, Improve, Translate, or other AI actions.
     tap(driver, "Play audio")
@@ -119,8 +116,8 @@ def test_record_discard_save_search_resume_sort_and_delete(
         driver,
         "Audio was removed. Your saved texts are retained; re-transcription is unavailable.",
     )
-    scroll_to_text(driver, "Material title")
-    assert wait_accessible(driver, "Material title").get_attribute("text") == older
+    scroll_to_text(driver, older)
+    assert wait_accessible(driver, f"Material title: {older}")
     scroll_to_text(driver, "Transcribe · A")
     assert not wait_accessible(driver, "Transcribe · A").is_enabled()
     delete_material_from_detail(driver)
@@ -128,7 +125,7 @@ def test_record_discard_save_search_resume_sort_and_delete(
     material_titles.remove(older)
 
     tap(driver, f"Open {newer}", scroll_text=newer)
-    wait_text(driver, "Make it your own.")
+    wait_accessible(driver, f"Material title: {newer}")
     delete_material_from_detail(driver)
     wait_text(driver, "A place for your English")
     material_titles.remove(newer)

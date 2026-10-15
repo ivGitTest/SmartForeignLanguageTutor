@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from uuid import uuid4
 
 import pytest
 from selenium.webdriver.support.ui import WebDriverWait
@@ -108,9 +107,8 @@ def test_material_back_returns_to_list(
     android_driver, sample_dictionary, material_titles, back, playing
 ):
     driver = android_driver
-    title = f"pytest-navigation-{uuid4().hex[:8]}"
     tap_tab(driver, "Materials")
-    save_material(driver, title, seconds=6 if playing else 1.8)
+    title = save_material(driver, seconds=6 if playing else 1.8)
     material_titles.append(title)
     # First close the material reached after Save, then repeatedly open its list row.
     for _ in range(3):
@@ -121,13 +119,12 @@ def test_material_back_returns_to_list(
         wait_accessible(driver, f"Open {title}")
         assert_app_healthy(driver)
         tap(driver, f"Open {title}", scroll_text=title)
-        wait_text(driver, "Make it your own.")
-        assert wait_accessible(driver, "Material title").get_attribute("text") == title
+        wait_accessible(driver, f"Material title: {title}")
     go_back(driver, back)
     wait_accessible(driver, f"Open {title}")
     # Also exercise the alternative entry point; no AI requests are made.
     tap(driver, "Continue last material", scroll_text="Continue last material")
-    wait_text(driver, "Make it your own.")
+    wait_accessible(driver, f"Material title: {title}")
     go_back(driver, back)
     wait_accessible(driver, f"Open {title}")
     assert_app_healthy(driver)

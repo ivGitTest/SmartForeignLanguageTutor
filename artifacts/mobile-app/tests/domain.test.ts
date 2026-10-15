@@ -7,6 +7,7 @@ import { eligible, rate, skipDeleted, startSession } from "../core/learning";
 import { sentenceForSelection, transcriptDocument } from "../core/selection";
 import { operations } from "../core/operations";
 import { createMaterialActions } from "../core/material-actions";
+import { formatRecordingTitle, titleForMaterial } from "../core/recording-title";
 
 function card(id: string, dueAt: number | null = null): Card {
   return { id, createdAt: Number(id) || 1, expression: `word ${id}`, translation: "слово", example: "", interval: 0, repetition: 0, efactor: 2.5, dueAt, timezone: "UTC" };
@@ -27,6 +28,13 @@ function materialData() {
   return d;
 }
 const result = (text: string, complete = true) => ({ text, complete, cost: null });
+
+test("recording titles use local DD.MM.YYYY/HH:MM:SS/seconds format", () => {
+  const date = new Date(2026, 9, 15, 7, 3, 9);
+  assert.equal(formatRecordingTitle(date.getTime(), 12.4), "15.10.2026/07:03:09/12s");
+  assert.equal(titleForMaterial({ createdAt: date.getTime(), title: "Old title", audio: { duration: 12.4 } }), "15.10.2026/07:03:09/12s");
+  assert.equal(titleForMaterial({ createdAt: date.getTime(), title: "Retained title", audio: null }), "Retained title");
+});
 
 test("defaults are fixed EN/RU/EN, B1-B2 prompts and permitted models", () => {
   const s = defaults();

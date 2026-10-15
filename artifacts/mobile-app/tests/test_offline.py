@@ -67,31 +67,36 @@ def test_demo_materials_are_limited_to_the_development_web_preview():
     shared_seed = (APP / "core" / "preview-seed.ts").read_text(encoding="utf-8")
 
     assert 'if (__DEV__ && Platform.OS === "web") await seedPreviewMaterials(repository);' in app_store
-    assert '"Preview · Audio only"' in web_seed
-    assert '"Preview · Audio + A"' in web_seed
-    assert '"Preview · Audio + A + B"' in web_seed
+    assert "formatRecordingTitle(now - 3 * 60_000, 1)" in web_seed
+    assert "formatRecordingTitle(now - 2 * 60_000, 1)" in web_seed
+    assert "formatRecordingTitle(now - 60_000, 1)" in web_seed
     assert "existing.audio = material.audio" in web_seed
     assert "data.materials.push(material)" in web_seed
     assert "AsyncStorage.getItem(SEED_KEY)" in web_seed
-    assert "Preview · Audio" not in native_seed
-    assert "Preview · Audio" not in shared_seed
+    assert "formatRecordingTitle" not in native_seed
+    assert "formatRecordingTitle" not in shared_seed
 
 
 @pytest.mark.materials
-def test_material_title_caption_is_hidden_but_kept_accessible():
+def test_material_title_is_generated_and_not_editable():
     material_screen = (APP / "app" / "material" / "[id].tsx").read_text(encoding="utf-8")
+    materials_list = (APP / "app" / "(tabs)" / "materials.tsx").read_text(encoding="utf-8")
     ui = (APP / "components" / "ui.tsx").read_text(encoding="utf-8")
 
-    assert '<Field label="Material title" labelHidden' in material_screen
-    assert "accessibilityLabel={label}" in ui
-    assert "{!labelHidden && <Body" in ui
+    assert '<Heading small accessibilityLabel={`Material title: ${materialTitle}`}>{materialTitle}</Heading>' in material_screen
+    assert "label=\"Material title\"" not in material_screen
+    assert "title !== m.title" not in material_screen
+    assert "titleForMaterial" in material_screen
+    assert "titleForMaterial(item)" in materials_list
+    assert "titleForMaterial(m)" in materials_list
+    assert "accessibilityLabel={accessibilityLabel}" in ui
 
 
 @pytest.mark.materials
 def test_material_detail_hides_decorative_workflow_label():
     source = (APP / "app" / "material" / "[id].tsx").read_text(encoding="utf-8")
     assert "AUDIO → A → B → TRANSLATION" not in source
-    assert "<Heading>Make it your own.</Heading>" in source
+    assert "Make it your own." not in source
 
 
 @pytest.mark.materials

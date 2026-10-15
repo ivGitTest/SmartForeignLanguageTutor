@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 
@@ -185,16 +186,26 @@ def record_to_pending(driver, *, seconds: float = 1.8) -> None:
     wait_accessible(driver, "Save recording", timeout=20)
 
 
-def save_material(driver, title: str, *, seconds: float = 1.8) -> None:
+def save_material(driver, *, seconds: float = 1.8) -> str:
     record_to_pending(driver, seconds=seconds)
     tap(driver, "Save recording")
-    wait_text(driver, "Make it your own.")
-    field = wait_accessible(driver, "Material title")
-    field.clear()
-    field.send_keys(title)
-    hide_keyboard(driver)
-    tap(driver, "Save title", scroll_text="Save title")
-    assert wait_accessible(driver, "Material title").get_attribute("text") == title
+    title_element = WebDriverWait(driver, 12).until(
+        lambda current: next(
+            (
+                element
+                for element in current.find_elements(
+                    AppiumBy.XPATH,
+                    "//*[@content-desc and starts-with(@content-desc, 'Material title: ')]",
+                )
+                if element.is_displayed()
+            ),
+            False,
+        )
+    )
+    title = title_element.get_attribute("content-desc").removeprefix("Material title: ")
+    assert re.fullmatch(r"\d{2}\.\d{2}\.\d{4}/\d{2}:\d{2}:\d{2}/\d+s", title)
+    assert not driver.find_elements(AppiumBy.ACCESSIBILITY_ID, "Save title")
+    return title
 
 
 def delete_material_from_detail(driver) -> None:

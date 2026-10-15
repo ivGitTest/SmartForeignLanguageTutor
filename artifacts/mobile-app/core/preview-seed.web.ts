@@ -1,8 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { bFingerprint as makeBFingerprint, defaults, type Material } from "./model";
 import type { Repository } from "./repository";
+import { formatRecordingTitle } from "./recording-title";
 
-const SEED_KEY = "smart-lang-tutor-preview-materials-seeded-v2";
+const SEED_KEY = "smart-lang-tutor-preview-materials-seeded-v3";
 const DEMO_ID_PREFIX = "preview-material-";
 const SILENT_AUDIO =
   "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
@@ -71,18 +72,18 @@ function createPreviewMaterials(now: number): Material[] {
   return [
     createMaterial(
       `${DEMO_ID_PREFIX}audio-only`,
-      "Preview · Audio only",
+      formatRecordingTitle(now - 3 * 60_000, 1),
       now - 3 * 60_000,
     ),
     createMaterial(
       `${DEMO_ID_PREFIX}audio-a`,
-      "Preview · Audio + A",
+      formatRecordingTitle(now - 2 * 60_000, 1),
       now - 2 * 60_000,
       "I went to the store yesterday and bought some milk.",
     ),
     createMaterial(
       `${DEMO_ID_PREFIX}audio-a-b`,
-      "Preview · Audio + A + B",
+      formatRecordingTitle(now - 60_000, 1),
       now - 60_000,
       "I usually take the bus to work, but today I walked because the weather was nice.",
       "I usually commute by bus, but I walked to work today because the weather was pleasant.",
@@ -98,7 +99,10 @@ export async function seedPreviewMaterials(repository: Repository): Promise<void
     await repository.update(data => {
       for (const material of materials) {
         const existing = data.materials.find(candidate => candidate.id === material.id);
-        if (existing) existing.audio = material.audio;
+        if (existing) {
+          existing.audio = material.audio;
+          existing.title = material.title;
+        }
         else data.materials.push(material);
       }
     });

@@ -18,9 +18,9 @@ export function Body({ style, muted, ...props }: TextProps & { muted?: boolean }
   const c = useColors();
   return <Text {...props} style={[{ fontFamily: "DMSans_400Regular", fontSize: 15, lineHeight: 23, color: muted ? c.mutedForeground : c.foreground }, style]} />;
 }
-export function Heading({ children, small = false }: { children: React.ReactNode; small?: boolean }) {
+export function Heading({ children, small = false, accessibilityLabel }: { children: React.ReactNode; small?: boolean; accessibilityLabel?: string }) {
   const c = useColors();
-  return <Text accessibilityRole="header" style={{ fontFamily: "Fraunces_500Medium", fontSize: small ? 23 : 33, lineHeight: small ? 30 : 40, color: c.foreground }}>{children}</Text>;
+  return <Text accessibilityRole="header" accessibilityLabel={accessibilityLabel} style={{ fontFamily: "Fraunces_500Medium", fontSize: small ? 23 : 33, lineHeight: small ? 30 : 40, color: c.foreground }}>{children}</Text>;
 }
 export function Label({ children }: { children: React.ReactNode }) {
   return <Body muted style={{ fontFamily: "DMSans_700Bold", fontSize: 11, letterSpacing: 1.2 }}>{children}</Body>;

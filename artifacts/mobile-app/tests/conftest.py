@@ -18,6 +18,7 @@ from tests.helpers import (
     tap_confirm,
     tap_tab,
     text_is_visible,
+    wait_accessible,
     wait_text,
 )
 
@@ -153,6 +154,6 @@ def material_titles(android_driver):
         if not rows:
             continue
         tap(android_driver, f"Open {title}", scroll_text=title)
-        wait_text(android_driver, "Make it your own.")
+        wait_accessible(android_driver, f"Material title: {title}")
         delete_material_from_detail(android_driver)
         wait_text(android_driver, "Materials")
