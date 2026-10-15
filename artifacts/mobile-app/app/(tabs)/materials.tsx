@@ -58,14 +58,12 @@ export default function Materials() {
     </View>}
     renderItem={({ item }) => {
       const title = titleForMaterial(item);
-      const dateAndDuration = `${new Date(item.createdAt).toLocaleDateString("en-GB")} · ${new Date(item.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}${item.audio ? ` · ${Math.round(item.audio.duration)}s` : " · audio removed"}`;
       const attributes = [item.audio && "Audio", item.a && "A", item.b && "B", item.translation && "Translation"].filter(Boolean).join(" · ");
       return <Pressable accessibilityRole="button" accessibilityLabel={`Open ${title}`} onPress={() => { void repo.update(d => { d.lastMaterialId = item.id; }); router.push(`/material/${item.id}`); }}>
         <Card style={{ paddingVertical: 12, paddingHorizontal: 14, gap: 4 }}>
           <Row><Body numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, fontFamily: "DMSans_700Bold" }}>{title}</Body><MaterialIcons name="chevron-right" size={20} color={c.mutedForeground} /></Row>
-          <Row style={{ gap: 6 }}>
-            <Body accessibilityLabel={`Date and duration for ${title}: ${dateAndDuration}`} muted numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, minWidth: 0, fontSize: 10, lineHeight: 14 }}>{dateAndDuration}</Body>
-            <Body accessibilityLabel={`Available content for ${title}: ${attributes}`} muted numberOfLines={1} style={{ flexShrink: 0, fontSize: 10, lineHeight: 14, textAlign: "right" }}>{attributes}</Body>
+          <Row style={{ gap: 6, justifyContent: "flex-end" }}>
+            <Body accessibilityLabel={`Available content for ${title}: ${attributes}`} muted numberOfLines={1} ellipsizeMode="tail" style={{ fontSize: 10, lineHeight: 14, textAlign: "right" }}>{attributes}</Body>
           </Row>
         </Card>
       </Pressable>;

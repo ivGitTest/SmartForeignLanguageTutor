@@ -46,14 +46,15 @@ def test_dictionary_header_is_pinned_over_an_opaque_background():
 
 
 @pytest.mark.materials
-def test_material_date_and_artifact_statuses_share_a_right_aligned_row():
+def test_material_list_hides_repeated_date_and_right_aligns_artifact_statuses():
     source = (APP / "app" / "(tabs)" / "materials.tsx").read_text(encoding="utf-8")
-    row = re.search(r'<Row style=\{\{ gap: 6 \}\}>(.*?)</Row>', source, re.DOTALL)
-    assert row, "Material metadata must use one compact row."
+    row = re.search(r'<Row style=\{\{ gap: 6, justifyContent: "flex-end" \}\}>(.*?)</Row>', source, re.DOTALL)
+    assert row, "Artifact statuses must remain in a compact right-aligned row."
     content = row.group(1)
-    assert "{dateAndDuration}" in content
+    assert "dateAndDuration" not in source
+    assert "Date and duration for" not in source
     assert "{attributes}" in content
-    assert content.count("numberOfLines={1}") == 2
+    assert content.count("numberOfLines={1}") == 1
     assert 'textAlign: "right"' in content
     assert all(f'"{status}"' in source for status in ("Audio", "A", "B", "Translation"))
     assert 'MaterialIcons name="chevron-right"' in source
