@@ -60,6 +60,24 @@ def test_material_date_and_artifact_statuses_share_a_right_aligned_row():
 
 
 @pytest.mark.materials
+def test_demo_materials_are_limited_to_the_development_web_preview():
+    app_store = (APP / "core" / "app-store.tsx").read_text(encoding="utf-8")
+    web_seed = (APP / "core" / "preview-seed.web.ts").read_text(encoding="utf-8")
+    native_seed = (APP / "core" / "preview-seed.native.ts").read_text(encoding="utf-8")
+    shared_seed = (APP / "core" / "preview-seed.ts").read_text(encoding="utf-8")
+
+    assert 'if (__DEV__ && Platform.OS === "web") await seedPreviewMaterials(repository);' in app_store
+    assert '"Preview · Audio only"' in web_seed
+    assert '"Preview · Audio + A"' in web_seed
+    assert '"Preview · Audio + A + B"' in web_seed
+    assert "existing.audio = material.audio" in web_seed
+    assert "data.materials.push(material)" in web_seed
+    assert "AsyncStorage.getItem(SEED_KEY)" in web_seed
+    assert "Preview · Audio" not in native_seed
+    assert "Preview · Audio" not in shared_seed
+
+
+@pytest.mark.materials
 def test_material_chain_mocked_success_errors_cancel_and_stale_results():
     run_typescript(
         APP / "tests" / "domain.test.ts",

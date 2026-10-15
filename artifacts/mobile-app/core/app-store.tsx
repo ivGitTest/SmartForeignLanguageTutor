@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useSyncExternalStore } from "react";
-import { ActivityIndicator, AppState, Text, View } from "react-native";
+import { ActivityIndicator, AppState, Platform, Text, View } from "react-native";
 import { Repository } from "./repository";
 import { persistence } from "./storage";
+import { seedPreviewMaterials } from "./preview-seed";
 import { operations } from "./operations";
 import { audioFiles } from "./audio-files";
 import { flushDeletedFiles } from "./file-maintenance";
@@ -15,6 +16,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let alive = true;
     repository.hydrate().then(async () => {
+      if (__DEV__ && Platform.OS === "web") await seedPreviewMaterials(repository);
       // A malformed recovery marker must not prevent opening the valid dictionary/database.
       let recovery = null;
       try { recovery = await audioFiles.recover(); }
