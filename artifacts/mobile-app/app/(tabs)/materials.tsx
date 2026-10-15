@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { router } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Body, Button, Card, Field, Heading, Label, Notice, Row, useTask } from "@/components/ui";
+import { Body, Button, Card, Field, Heading, Notice, Row, useTask } from "@/components/ui";
 import { Recorder } from "@/components/recorder";
 import { AudioPlayer } from "@/components/audio-player";
 import { useApp } from "@/core/app-store";
@@ -33,7 +33,7 @@ export default function Materials() {
   }
   return <FlatList data={materials} keyExtractor={m => m.id} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" style={{ flex: 1, backgroundColor: c.background }} contentContainerStyle={{ padding: 20, paddingBottom: 30, gap: 10, width: "100%", maxWidth: 640, alignSelf: "center" }}
     ListHeaderComponent={<View style={{ gap: 18, paddingBottom: 8 }}>
-      <View><Label>FROM SPEECH TO CONFIDENCE</Label><Heading>Materials</Heading><Body muted>Record. Refine. Make it yours.</Body></View>
+      <View><Heading>Materials</Heading><Body muted>Record. Refine. Make it yours.</Body></View>
       <Recorder disabled={!!active || task.pending || !!data.pendingAudio} visible={!data.pendingAudio} />
       {data.pendingAudio ? <Card><Heading small>Keep this recording?</Heading><Body muted>{data.pendingAudio.duration.toFixed(1)}s · {(data.pendingAudio.size / 1024).toFixed(0)} KiB</Body>
         <AudioPlayer uri={data.pendingAudio.uri} />
