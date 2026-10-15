@@ -51,10 +51,10 @@ export function IconButton({ name, label, onPress, disabled }: { name: React.Com
     <MaterialIcons name={name} size={24} color={c.primary} />
   </Pressable>;
 }
-export function Field({ label, style, containerStyle, ...props }: TextInputProps & { label: string; containerStyle?: ViewStyle }) {
+export function Field({ label, style, containerStyle, labelHidden = false, ...props }: TextInputProps & { label: string; containerStyle?: ViewStyle; labelHidden?: boolean }) {
   const c = useColors();
   return <View style={[{ gap: 7 }, containerStyle]}>
-    <Body style={{ fontFamily: "DMSans_600SemiBold", fontSize: 13 }}>{label}</Body>
+    {!labelHidden && <Body style={{ fontFamily: "DMSans_600SemiBold", fontSize: 13 }}>{label}</Body>}
     <TextInput {...props} accessibilityLabel={label} placeholderTextColor={c.mutedForeground}
       style={[{ fontFamily: "DMSans_400Regular", fontSize: 16, color: c.foreground, padding: 13, minHeight: 49, borderWidth: 1, borderColor: c.border, borderRadius: 14, backgroundColor: c.card, textAlignVertical: props.multiline ? "top" : "center" }, style]} />
   </View>;

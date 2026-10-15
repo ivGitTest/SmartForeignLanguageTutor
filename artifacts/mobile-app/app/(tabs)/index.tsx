@@ -21,7 +21,7 @@ export default function Dictionary() {
       <View><Label>YOUR EVERYDAY ENGLISH</Label><Heading>Dictionary</Heading></View>
       <Button title={remaining ? "Resume learning" : `Start learning${count ? ` · ${count} cards` : ""}`} icon="school" disabled={!remaining && !count} onPress={() => void task.run(async () => { await repo.update(d => startSession(d)); router.push("/learning"); })} />
       <Row><View><Body style={{ fontFamily: "DMSans_700Bold" }}>Your vocabulary · {data.cards.length}</Body><Body muted style={{ fontSize: 12 }}>English → Russian</Body></View><Button title="Add" icon="add" onPress={() => router.push("/word/new")} /></Row>
-      <Field label="Search dictionary" placeholder="Search a word or translation" value={query} onChangeText={setQuery} autoCapitalize="none" />
+      <Field label="Search dictionary" labelHidden placeholder="Search a word or translation" value={query} onChangeText={setQuery} autoCapitalize="none" />
       <View style={{ height: 1, backgroundColor: c.border }} />
       {!!task.error && <Notice error>{task.error}</Notice>}
     </View>}
