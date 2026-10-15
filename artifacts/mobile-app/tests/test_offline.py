@@ -102,14 +102,14 @@ def test_russian_translation_text_is_constrained_to_the_disclosure_width():
     """Protect the Android B-screen translation from intrinsic-width overflow."""
     source = (APP / "app" / "material" / "[id].tsx").read_text(encoding="utf-8")
     translation = re.search(
+        r'<View style=\{\{ alignSelf: "stretch", minWidth: 0 \}\}>\s*'
         r'<Body\s+accessibilityLabel="Russian translation"(?P<props>.*?)>'
-        r'\{m\.translation\}</Body>',
+        r'\{m\.translation\}</Body>\s*</View>',
         source,
         flags=re.DOTALL,
     )
-    assert translation, "The saved Russian translation needs a dedicated, testable text field."
+    assert translation, "The saved Russian translation must be rendered inside a constrained, visible text container."
     for constraint in (
-        'width: "100%"',
         'maxWidth: "100%"',
         "minWidth: 0",
         "flexShrink: 1",
