@@ -96,6 +96,13 @@ def test_material_title_is_generated_and_not_editable():
     assert "accessibilityLabel={accessibilityLabel}" in ui
 
 
+@pytest.mark.learning
+def test_learning_screen_hides_daily_tagline():
+    source = (APP / "app" / "(tabs)" / "learning.tsx").read_text(encoding="utf-8")
+    assert "A LITTLE, EVERY DAY" not in source
+    assert "<Heading>Learning</Heading>" in source
+
+
 @pytest.mark.materials
 def test_material_detail_hides_decorative_workflow_label():
     source = (APP / "app" / "material" / "[id].tsx").read_text(encoding="utf-8")

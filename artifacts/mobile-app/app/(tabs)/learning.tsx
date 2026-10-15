@@ -23,7 +23,7 @@ export default function Learning() {
   useFocusEffect(React.useCallback(() => () => { stopSpeaking(); }, []));
   const session = data.session;
   const card = session && data.cards.find(c => c.id === session.ids[session.index]);
-  if (!session) return <Screen><Label>A LITTLE, EVERY DAY</Label><Heading>Learning</Heading><Card><Heading small>{data.cards.length ? "All caught up" : "No cards yet"}</Heading><Body muted>{data.cards.length ? "There are no new or due cards. Your saved schedule will bring them back when they are due." : "Add words in Dictionary or from an improved material to start a session."}</Body><Button title="Open Dictionary" onPress={() => router.push("/")} /></Card>{!!task.error && <Notice error>{task.error}</Notice>}</Screen>;
+  if (!session) return <Screen><Heading>Learning</Heading><Card><Heading small>{data.cards.length ? "All caught up" : "No cards yet"}</Heading><Body muted>{data.cards.length ? "There are no new or due cards. Your saved schedule will bring them back when they are due." : "Add words in Dictionary or from an improved material to start a session."}</Body><Button title="Open Dictionary" onPress={() => router.push("/")} /></Card>{!!task.error && <Notice error>{task.error}</Notice>}</Screen>;
   if (session.index >= session.ids.length) return <Screen><Label>SESSION COMPLETE</Label><Heading>Nicely done.</Heading><Card><Heading small>{session.ratings.length} cards reviewed</Heading><Body muted>Your progress is saved on this device.</Body><Body>Again {session.ratings.filter(r => r.quality === 0).length} · Hard {session.ratings.filter(r => r.quality === 3).length} · Good {session.ratings.filter(r => r.quality === 4).length} · Easy {session.ratings.filter(r => r.quality === 5).length}</Body></Card>
     <Button title="Continue learning" disabled={task.pending} onPress={() => void task.run(() => repo.update(d => { d.session = null; startSession(d); }))} />
     <Button title="Exit to Dictionary" secondary onPress={() => router.push("/")} />
@@ -31,7 +31,7 @@ export default function Learning() {
   </Screen>;
   if (!card) return <Screen><Notice>This card was removed from the session.</Notice></Screen>;
   return <Screen>
-    <Label>A LITTLE, EVERY DAY</Label><Row><Heading>Learning</Heading><Body muted>{session.index + 1} / {session.ids.length}</Body></Row>
+    <Row><Heading>Learning</Heading><Body muted>{session.index + 1} / {session.ids.length}</Body></Row>
     <View accessibilityLabel="Session progress" style={{ height: 5, borderRadius: 4, backgroundColor: c.border }}><View style={{ height: 5, width: `${session.index / session.ids.length * 100}%`, backgroundColor: c.primary, borderRadius: 4 }} /></View>
     <Card style={{ minHeight: 280, justifyContent: "center", padding: 26 }}>
       <Label>ENGLISH</Label><Heading>{card.expression}</Heading>
