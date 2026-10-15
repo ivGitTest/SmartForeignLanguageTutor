@@ -64,4 +64,4 @@ export default function Materials() {
     ListEmptyComponent={<Card><Heading small>{query ? "No matching materials" : "A place for your English"}</Heading><Body muted>{query ? "Try another word or clear the search." : "Your recordings and their linked texts will appear here. Nothing is uploaded until you choose an AI action."}</Body></Card>}
   />;
 }
-function Search({ value, change }: { value: string; change: (v: string) => void }) { return <Field label="Search materials" placeholder="Search titles or texts" value={value} onChangeText={change} />; }
+function Search({ value, change }: { value: string; change: (v: string) => void }) { return <Field label="Search materials" labelHidden placeholder="Search titles or texts" value={value} onChangeText={change} />; }
