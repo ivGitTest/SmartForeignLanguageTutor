@@ -64,8 +64,6 @@ export default function SettingsScreen() {
       {kind === "aModel" && <Body muted style={{ fontSize: 12 }}>Purpose: transcription</Body>}
       <Body muted style={{ fontSize: 12 }}>{info ? modelPrice(info, kind === "aModel") : catalog ? "This model is unavailable. Requests will be blocked; no automatic replacement." : "Rate unavailable · live availability not verified."}</Body>
       <Body muted style={{ fontSize: 12 }}>Last checked: {catalog ? new Date(catalog.at).toLocaleString() : "never"}</Body>
-      <Body style={{ alignSelf: "flex-start", borderRadius: 30, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: c.accent, color: c.accentForeground, fontFamily: "DMSans_700Bold", fontSize: 11 }}>QUALITY UNVERIFIED</Body>
-      <Body muted style={{ fontSize: 12 }}>{kind === "aModel" ? "Quality and Android audio compatibility still require real-device qualification." : "Meaning preservation and improvement quality still require qualification."}</Body>
     </Card>;
   }
   return <Screen>
@@ -95,7 +93,6 @@ export default function SettingsScreen() {
       {modelSection("A · SPEECH TO TEXT", "aModel", A_MODELS)}
       {modelSection("B · IMPROVEMENT + TRANSLATION", "bModel", B_MODELS)}
       {!!catalogError && <Notice error>{catalogError}</Notice>}
-      <Body muted style={{ fontSize: 12 }}>Provider routing can affect actual charges.</Body>
       <Button title="Refresh availability & prices" secondary disabled={task.pending} onPress={() => void task.run(async () => {
         const result = await getCatalog(new AbortController().signal, true); setCatalog(result); setCatalogError("");
       })} />
