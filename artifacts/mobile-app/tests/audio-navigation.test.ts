@@ -41,6 +41,7 @@ function mountPlayer(focused = true) {
     },
     "expo-router/react-navigation": { useIsFocused: () => focused },
     "react-native": {
+      Pressable: () => null,
       View: () => null,
       AppState: {
         addEventListener: (_event: string, listener: (state: string) => void) => {
@@ -49,7 +50,8 @@ function mountPlayer(focused = true) {
         },
       },
     },
-    "./ui": { Body: () => null, Button: () => null, Row: () => null },
+    "@expo/vector-icons": { MaterialIcons: () => null },
+    "./ui": { Row: () => null },
     "@expo/ui": { Host: () => null, Slider: () => null },
     "../hooks/useColors": { useColors: () => ({ primary: "#000" }) },
   };

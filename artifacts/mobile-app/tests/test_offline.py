@@ -97,11 +97,16 @@ def test_material_detail_hides_decorative_workflow_label():
 @pytest.mark.materials
 def test_audio_player_shows_only_an_icon_and_slider_in_one_row():
     source = (APP / "components" / "audio-player.tsx").read_text(encoding="utf-8")
-    row = re.search(r'<Row style=\{\{ gap: 6, justifyContent: "flex-start" \}\}>(.*?)</Row>', source, re.DOTALL)
+    row = re.search(r'<Row style=\{\{ gap: 10, justifyContent: "flex-start", alignItems: "center" \}\}>(.*?)</Row>', source, re.DOTALL)
     assert row, "The audio control and slider must share one row."
-    assert "<IconButton" in row.group(1)
+    assert "<Pressable" in row.group(1)
+    assert 'borderRadius: 24' in row.group(1)
+    assert "backgroundColor: c.secondary" in row.group(1)
+    assert '<MaterialIcons name={status.playing ? "pause" : "play-arrow"}' in row.group(1)
+    assert "color={c.primary}" in row.group(1)
+    assert "height: 48, justifyContent: \"center\"" in row.group(1)
     assert "<Host" in row.group(1) and "<Slider" in row.group(1)
-    assert 'label={status.playing ? "Pause audio" : "Play audio"}' in row.group(1)
+    assert 'accessibilityLabel={status.playing ? "Pause audio" : "Play audio"}' in row.group(1)
     assert "Math.floor(status.currentTime" not in source
     assert "Math.floor(status.duration" not in source
 
