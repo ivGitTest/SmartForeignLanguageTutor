@@ -86,7 +86,6 @@ export default function MaterialScreen() {
     {!!m.a && <Card>
       <Row><Heading small>A · Original</Heading><IconButton name="volume-up" label="Listen to A" onPress={() => void task.run(() => speak(a, task.setError))} /></Row>
       {!!m.aModelUsed && <Body muted style={{ fontSize: 11 }}>{m.aModelUsed} · {new Date(m.aCreatedAt).toLocaleString("en-GB")}{m.aEdited ? " · edited" : ""}</Body>}
-      <Body muted>Verbatim transcription. Edit it before improving.</Body>
       <Field label="A · editable transcript" value={a} multiline style={{ minHeight: 150 }} maxLength={10000}
         onChangeText={v => void saveA(v)} />
       <Body muted style={{ fontSize: 12 }}>{saveCount ? "Saving A…" : saveError ? "Draft not saved" : "A saved locally"}</Body>

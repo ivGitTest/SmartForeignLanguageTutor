@@ -85,6 +85,8 @@ def test_material_title_is_generated_and_not_editable():
     ui = (APP / "components" / "ui.tsx").read_text(encoding="utf-8")
 
     assert '<Heading small accessibilityLabel={`Material title: ${materialTitle}`}>{materialTitle}</Heading>' in material_screen
+    assert "Verbatim transcription. Edit it before improving." not in material_screen
+    assert '<Field label="A · editable transcript"' in material_screen
     assert "label=\"Material title\"" not in material_screen
     assert "title !== m.title" not in material_screen
     assert "titleForMaterial" in material_screen
