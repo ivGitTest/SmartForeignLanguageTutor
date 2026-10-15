@@ -78,7 +78,7 @@ export function Recorder({ disabled, visible = true }: { disabled: boolean; visi
   if (!visible) return null;
   return <Card>
     <Heading small>{status.isRecording ? "Recording…" : "Speak naturally."}</Heading>
-    <Body muted>One speaker · English · up to 2 minutes</Body>
+    <Body muted>Up to 2 minutes</Body>
     {status.isRecording && <Heading>{Math.floor(status.durationMillis / 60000)}:{String(Math.floor(status.durationMillis / 1000) % 60).padStart(2, "0")}</Heading>}
     {interrupted && <Notice>Recording stopped when the app lost focus. Save or discard the captured fragment.</Notice>}
     {!!error && <Notice error>{error}</Notice>}
