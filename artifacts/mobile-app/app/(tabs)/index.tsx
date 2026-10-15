@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FlatList, Platform, Pressable, View } from "react-native";
+import { FlatList, Pressable, View } from "react-native";
 import { router } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Body, Button, Card, Field, Heading, Label, Notice, Row, useTask } from "@/components/ui";
@@ -30,6 +30,5 @@ export default function Dictionary() {
     ListEmptyComponent={<Card><Heading small>{query ? "No matching words" : "Your first word starts here"}</Heading><Body muted>{query ? "Try another expression or its Russian translation." : "Add a word manually, or select an expression in an improved material."}</Body>
       {!query && <Button title="Add a word" secondary onPress={() => router.push("/word/new")} />}
     </Card>}
-    ListFooterComponent={Platform.OS === "web" ? <View style={{ marginTop: 20 }}><Notice>Browser preview: local dictionary and learning. Recording and protected API-key storage require the Android app.</Notice></View> : null}
   />;
 }
