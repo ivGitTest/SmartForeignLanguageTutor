@@ -95,6 +95,18 @@ def test_material_detail_hides_decorative_workflow_label():
 
 
 @pytest.mark.materials
+def test_audio_player_shows_only_an_icon_and_slider_in_one_row():
+    source = (APP / "components" / "audio-player.tsx").read_text(encoding="utf-8")
+    row = re.search(r'<Row style=\{\{ gap: 6, justifyContent: "flex-start" \}\}>(.*?)</Row>', source, re.DOTALL)
+    assert row, "The audio control and slider must share one row."
+    assert "<IconButton" in row.group(1)
+    assert "<Host" in row.group(1) and "<Slider" in row.group(1)
+    assert 'label={status.playing ? "Pause audio" : "Play audio"}' in row.group(1)
+    assert "Math.floor(status.currentTime" not in source
+    assert "Math.floor(status.duration" not in source
+
+
+@pytest.mark.materials
 def test_material_chain_mocked_success_errors_cancel_and_stale_results():
     run_typescript(
         APP / "tests" / "domain.test.ts",
