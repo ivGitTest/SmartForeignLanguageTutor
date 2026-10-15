@@ -71,6 +71,11 @@ def test_demo_materials_are_limited_to_the_development_web_preview():
     assert "formatRecordingTitle(now - 3 * 60_000, 1)" in web_seed
     assert "formatRecordingTitle(now - 2 * 60_000, 1)" in web_seed
     assert "formatRecordingTitle(now - 60_000, 1)" in web_seed
+    assert "smart-lang-tutor-preview-materials-seeded-v4" in web_seed
+    assert "Обычно я езжу на работу на автобусе, но сегодня пошёл пешком, потому что погода была приятной." in web_seed
+    assert "translationFingerprint: translation ? makeTranslationFingerprint(settings) : \"\"" in web_seed
+    assert "existing.b === material.b && !existing.translation" in web_seed
+    assert "existing.translation = material.translation" in web_seed
     assert "existing.audio = material.audio" in web_seed
     assert "data.materials.push(material)" in web_seed
     assert "AsyncStorage.getItem(SEED_KEY)" in web_seed

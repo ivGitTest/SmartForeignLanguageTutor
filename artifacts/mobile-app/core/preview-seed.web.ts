@@ -1,9 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { bFingerprint as makeBFingerprint, defaults, type Material } from "./model";
+import {
+  bFingerprint as makeBFingerprint,
+  defaults,
+  translationFingerprint as makeTranslationFingerprint,
+  type Material,
+} from "./model";
 import type { Repository } from "./repository";
 import { formatRecordingTitle } from "./recording-title";
 
-const SEED_KEY = "smart-lang-tutor-preview-materials-seeded-v3";
+const SEED_KEY = "smart-lang-tutor-preview-materials-seeded-v4";
 const DEMO_ID_PREFIX = "preview-material-";
 const SILENT_AUDIO =
   "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
@@ -32,6 +37,7 @@ function createMaterial(
   createdAt: number,
   a = "",
   b = "",
+  translation = "",
 ): Material {
   const settings = defaults();
   const aRevision = a ? 1 : 0;
@@ -54,15 +60,15 @@ function createMaterial(
     aCreatedAt: a ? createdAt : 0,
     aTemperatureUsed: 0,
     bSourceA: b ? a : "",
-    translation: "",
-    translationFingerprint: "",
+    translation,
+    translationFingerprint: translation ? makeTranslationFingerprint(settings) : "",
     incomplete: "",
     cost: 0,
     costKnown: false,
     translationLanguage: "ru",
     translationError: "",
-    translationBVersion: 0,
-    translationCreatedAt: 0,
+    translationBVersion: translation ? bVersion : 0,
+    translationCreatedAt: translation ? createdAt : 0,
     pendingAI: null,
     lastAIError: "",
   };
@@ -87,6 +93,7 @@ function createPreviewMaterials(now: number): Material[] {
       now - 60_000,
       "I usually take the bus to work, but today I walked because the weather was nice.",
       "I usually commute by bus, but I walked to work today because the weather was pleasant.",
+      "Обычно я езжу на работу на автобусе, но сегодня пошёл пешком, потому что погода была приятной.",
     ),
   ];
 }
@@ -102,6 +109,13 @@ export async function seedPreviewMaterials(repository: Repository): Promise<void
         if (existing) {
           existing.audio = material.audio;
           existing.title = material.title;
+          if (material.translation && existing.b === material.b && !existing.translation) {
+            existing.translation = material.translation;
+            existing.translationFingerprint = material.translationFingerprint;
+            existing.translationError = "";
+            existing.translationBVersion = material.translationBVersion;
+            existing.translationCreatedAt = material.translationCreatedAt;
+          }
         }
         else data.materials.push(material);
       }
