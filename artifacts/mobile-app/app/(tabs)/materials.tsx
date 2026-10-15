@@ -53,6 +53,7 @@ export default function Materials() {
       <View>{/* Search is local and never sends other materials to the provider. */}
         <Search value={query} change={setQuery} />
       </View>
+      <View style={{ height: 1, backgroundColor: c.border }} />
     </View>}
     renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => { void repo.update(d => { d.lastMaterialId = item.id; }); router.push(`/material/${item.id}`); }}>
       <Card style={{ paddingVertical: 12, paddingHorizontal: 14, gap: 4 }}>
