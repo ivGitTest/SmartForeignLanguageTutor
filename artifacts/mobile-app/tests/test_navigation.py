@@ -155,10 +155,8 @@ def test_missing_routes_have_a_working_exit(
 
 def assert_app_version_is_present(driver) -> None:
     app_version = json.loads((APP_ROOT / "app.json").read_text(encoding="utf-8"))["expo"]["version"]
-    assert re.search(
-        rf"Version {re.escape(app_version)} · (?:Build \d+|Preview)",
-        driver.page_source,
-    )
+    assert "Version:" in driver.page_source
+    assert re.search(rf"{re.escape(app_version)} · (?:Build \d+|Preview)", driver.page_source)
 
 
 def test_primary_modes_and_nested_screens_are_reachable(
@@ -212,7 +210,7 @@ def test_external_links_open_a_handler_and_return_to_app(android_driver, sample_
     if link == "Open provider account page":
         tap(driver, "Connect or manage key", scroll_text="Connect or manage key")
         wait_text(driver, "Connect your own key")
-    tap(driver, link, scroll_text=("@ivTelegram →" if link == "@ivTelegram" else link))
+    tap(driver, link, scroll_text=link)
     try:
         WebDriverWait(driver, 15).until(lambda current: current.current_package != APP_PACKAGE)
     finally:

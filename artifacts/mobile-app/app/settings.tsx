@@ -111,8 +111,24 @@ export default function SettingsScreen() {
     })} />
     {active && <Button title="Cancel active AI request" secondary onPress={() => operations.cancel()} />}
     {!!task.error && <Notice error>{task.error}</Notice>}
-    <Card><Label>DEVELOPER</Label><Body>Рыбаков Иван</Body><Body muted style={{ fontSize: 12 }} testID="app-version">Version {appVersion} · {nativeBuildVersion ? `Build ${nativeBuildVersion}` : "Preview"}</Body><Pressable accessibilityRole="link" accessibilityLabel="@ivTelegram" style={{ minHeight: 44, justifyContent: "center" }} onPress={() => void task.run(async () => {
-      try { await Linking.openURL("https://t.me/ivTelegram"); } catch { throw new Error("Could not open Telegram. Open t.me/ivTelegram in your browser."); }
-    })}><Body style={{ color: c.primary, fontFamily: "DMSans_600SemiBold" }}>@ivTelegram →</Body></Pressable></Card>
+    <Card>
+      <Heading small>About this app</Heading>
+      <Row>
+        <Body>Developer:</Body>
+        <Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }}>Ivan Rybakov</Body>
+      </Row>
+      <Row>
+        <Body>Version:</Body>
+        <Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }} testID="app-version">{appVersion} · {nativeBuildVersion ? `Build ${nativeBuildVersion}` : "Preview"}</Body>
+      </Row>
+      <Row>
+        <Body>Support:</Body>
+        <Pressable accessibilityRole="link" accessibilityLabel="@ivTelegram" style={{ minHeight: 44, justifyContent: "center" }} onPress={() => void task.run(async () => {
+          try { await Linking.openURL("https://t.me/ivTelegram"); } catch { throw new Error("Could not open Telegram. Open t.me/ivTelegram in your browser."); }
+        })}>
+          <Body style={{ color: c.primary, fontFamily: "DMSans_700Bold" }}>@ivTelegram</Body>
+        </Pressable>
+      </Row>
+    </Card>
   </Screen>;
 }
