@@ -87,6 +87,7 @@ def test_material_title_is_generated_and_not_editable():
     assert "label=\"Material title\"" not in material_screen
     assert "title !== m.title" not in material_screen
     assert "titleForMaterial" in material_screen
+    assert 'new Date(m.createdAt).toLocaleString("en-GB")' not in material_screen
     assert "titleForMaterial(item)" in materials_list
     assert "titleForMaterial(m)" in materials_list
     assert "accessibilityLabel={accessibilityLabel}" in ui

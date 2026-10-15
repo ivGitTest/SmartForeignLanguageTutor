@@ -77,7 +77,6 @@ export default function MaterialScreen() {
   return <Screen>
     <Heading small accessibilityLabel={`Material title: ${materialTitle}`}>{materialTitle}</Heading>
     <Card>
-      <Body muted>{new Date(m.createdAt).toLocaleString("en-GB")}{m.audio ? ` · ${Math.round(m.audio.duration)}s` : ""}</Body>
       {m.audio ? <AudioPlayer uri={m.audio.uri} /> : <Notice>Audio was removed. Your saved texts are retained; re-transcription is unavailable.</Notice>}
       <Button title={m.a ? "Transcribe again · A" : "Transcribe · A"} icon="notes" disabled={busy || !m.audio} onPress={() => void task.run(async () => {
         if (m.aEdited && !await confirm("Replace edited A?", "Your manual edits will be replaced only if transcription succeeds. B and Translation will then be marked out of date.")) return;
