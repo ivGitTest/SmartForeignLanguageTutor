@@ -35,7 +35,7 @@ export default function Learning() {
     <View accessibilityLabel="Session progress" style={{ height: 5, borderRadius: 4, backgroundColor: c.border }}><View style={{ height: 5, width: `${session.index / session.ids.length * 100}%`, backgroundColor: c.primary, borderRadius: 4 }} /></View>
     <Card style={{ minHeight: 280, justifyContent: "center", padding: 26 }}>
       <Label>ENGLISH</Label><Heading>{card.expression}</Heading>
-      {session.revealed ? <><Body style={{ fontSize: 21, lineHeight: 29 }}>{card.translation}</Body>{!!card.example && <Body muted>{card.example}</Body>}</> : <Body muted>Think of the meaning before revealing it.</Body>}
+      {session.revealed && <><Body style={{ fontSize: 21, lineHeight: 29 }}>{card.translation}</Body>{!!card.example && <Body muted>{card.example}</Body>}</>}
     </Card>
     <Button title="Listen" icon="volume-up" secondary onPress={() => void task.run(() => speak(card.expression, task.setError))} />
     {!session.revealed ? <Button title="Show answer" disabled={task.pending} onPress={() => void task.run(() => repo.update(d => { if (d.session?.id === session.id && d.session.index === session.index) d.session.revealed = true; }))} /> :
