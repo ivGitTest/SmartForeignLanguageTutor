@@ -39,20 +39,15 @@ export default function SettingsScreen() {
   async function chooseModel(kind: "aModel" | "bModel", value: string, choices: readonly string[]) {
     if (!choices.includes(value)) return;
     const info = catalog?.models.find(m => m.id === value);
-    let reset = false;
     if (kind === "bModel" && info) {
-      const params = [data.settings.bParameters, data.settings.translationParameters];
-      const fields = ["temperature", "top_p", "max_tokens", ...(params.some(p => p.seed !== undefined) ? ["seed"] : [])];
+      const fixed = defaults();
+      const params = [fixed.bParameters, fixed.translationParameters];
+      const fields = ["temperature", "top_p", "max_tokens"];
       const incompatible = fields.filter(p => !info.supported_parameters.includes(p));
-      if (incompatible.some(p => p !== "seed")) throw new Error(`This model cannot support the required parameters: ${incompatible.join(", ")}. Choose another model.`);
-      if (incompatible.length) {
-        if (!await confirm("Incompatible parameters", "This model does not support your seed. Restore the default B and translation parameters before switching? Your prompts will be preserved.")) return;
-        reset = true;
-      }
+      if (incompatible.length) throw new Error(`This model does not support the fixed parameters: ${incompatible.join(", ")}. Choose another model.`);
     }
     await repo.update(d => {
       d.settings[kind] = value as never;
-      if (reset) { d.settings.bParameters = defaults().bParameters; d.settings.translationParameters = defaults().translationParameters; }
     });
   }
   function modelSection(label: string, kind: "aModel" | "bModel", choices: readonly string[]) {
@@ -104,7 +99,6 @@ export default function SettingsScreen() {
         )}
       </Card>
     </View>
-    <Button title="Prompts & parameters" icon="arrow-forward" secondary onPress={() => router.push("/ai-settings")} />
     <View style={{ gap: 9 }}>
       <Body accessibilityRole="header" style={{ fontFamily: "DMSans_700Bold", fontSize: 17 }}>Privacy, in plain language</Body>
       <Card>

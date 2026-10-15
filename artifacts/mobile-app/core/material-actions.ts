@@ -1,6 +1,6 @@
 import type { Repository } from "./repository";
 import { operations as sharedOperations } from "./operations";
-import { bFingerprint, bIsStale, translationFingerprint, id as newId, type Settings, type Material } from "./model";
+import { bFingerprint, bIsStale, fixedAISettings, translationFingerprint, id as newId, type Settings, type Material } from "./model";
 type Client = Pick<typeof import("./openrouter"), "chat" | "transcribe">;
 /** Injected boundaries make the complete AI chain testable without native modules or paid requests. */
 export function createMaterialActions(repository: Repository, client: Client, operations = sharedOperations) {
@@ -35,7 +35,7 @@ function current(id: string) {
   const m = d.materials.find(m => m.id === id);
   if (!m) throw new Error("This material has been deleted.");
   if (!d.settings.consent) throw new Error("Open Settings and accept the data-transfer notice before using AI.");
-  return { m: JSON.parse(JSON.stringify(m)) as Material, settings: JSON.parse(JSON.stringify(d.settings)) as Settings };
+  return { m: JSON.parse(JSON.stringify(m)) as Material, settings: fixedAISettings(JSON.parse(JSON.stringify(d.settings)) as Settings) };
 }
 function check(draft: { materials: Material[] }, id: string, revision: number, guard: () => void) {
   guard();

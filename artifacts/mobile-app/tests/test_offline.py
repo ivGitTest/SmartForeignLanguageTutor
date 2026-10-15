@@ -42,7 +42,7 @@ def test_dictionary_context_selection_normalization_and_fixture_storage():
 def test_material_chain_mocked_success_errors_cancel_and_stale_results():
     run_typescript(
         APP / "tests" / "domain.test.ts",
-        "A changes|B is durable|incomplete B|cancelled late|editing the source|chain snapshots|no A without",
+        "A changes|B is durable|incomplete B|cancelled late|editing the source|chain uses fixed|no A without",
     )
     run_typescript(APP / "tests" / "fixtures" / "offline-scenarios.ts", "materials")
     run_typescript(APP / "tests" / "local-save.test.ts")
@@ -57,8 +57,22 @@ def test_learning_queue_reveal_ratings_resume_and_due_schedule():
 
 
 def test_settings_validation_and_sqlite_transactions():
-    run_typescript(APP / "tests" / "domain.test.ts", "defaults|invalid ranges")
+    run_typescript(APP / "tests" / "domain.test.ts", "defaults|invalid ranges|fixed AI configuration")
     run_typescript(APP / "tests" / "sqlite.test.ts")
+
+
+def test_ai_prompt_and_parameter_form_is_disabled_but_preserved_in_comments():
+    settings = (APP / "app" / "settings.tsx").read_text(encoding="utf-8")
+    retired_form = (APP / "app" / "ai-settings.tsx").read_text(encoding="utf-8")
+    defaults = (APP / "core" / "model.ts").read_text(encoding="utf-8")
+    assert "Prompts & parameters" not in settings
+    assert "Previous form implementation:" in retired_form
+    assert "Save AI settings" in retired_form
+    assert "temperature: 0.2, top_p: 1, max_tokens: 2048" in defaults
+    assert "temperature: 0.1, top_p: 1, max_tokens: 2048" in defaults
+    assert "export const B_PROMPT" in defaults
+    assert "export const TRANSLATION_PROMPT" in defaults
+    assert "export const CONTEXT_PROMPT" in defaults
 
 
 @pytest.mark.navigation

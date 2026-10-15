@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Repository, type Persistence } from "../core/repository";
-import { initialData, dataSchema, defaults, settingsSchema, bFingerprint, translationFingerprint, bIsStale, translationIsStale, normalizeExpression, type AppData, type Card } from "../core/model";
+import { initialData, dataSchema, defaults, fixedAISettings, settingsSchema, bFingerprint, translationFingerprint, bIsStale, translationIsStale, normalizeExpression, type AppData, type Card } from "../core/model";
 import { eligible, rate, skipDeleted, startSession } from "../core/learning";
 import { sentenceForSelection, transcriptDocument } from "../core/selection";
 import { operations } from "../core/operations";
@@ -37,6 +37,29 @@ test("defaults are fixed EN/RU/EN, B1-B2 prompts and permitted models", () => {
   assert.match(s.bPrompt, /Не добавляй опыт/);
   assert.equal(settingsSchema.safeParse({ ...s, bModel: "arbitrary/model" }).success, false);
   assert.equal(settingsSchema.safeParse({ ...s, nativeLanguage: "de" }).success, false);
+});
+test("fixed AI configuration ignores previously saved tuning but keeps model and language", () => {
+  const base = defaults();
+  const saved = {
+    ...base,
+    bModel: "openai/gpt-4.1" as const,
+    nativeLanguage: "ru" as const,
+    aTemperature: 0.5,
+    bPrompt: "previous custom B prompt",
+    translationPrompt: "previous custom translation prompt",
+    contextPrompt: "previous custom contextual prompt",
+    bParameters: { temperature: 1.4, top_p: 0.7, max_tokens: 512, seed: 123 },
+    translationParameters: { temperature: 0.8, top_p: 0.6, max_tokens: 512, seed: 456 },
+  };
+  const fixed = fixedAISettings(saved);
+  assert.equal(fixed.bModel, saved.bModel);
+  assert.equal(fixed.nativeLanguage, saved.nativeLanguage);
+  assert.equal(fixed.aTemperature, base.aTemperature);
+  assert.equal(fixed.bPrompt, base.bPrompt);
+  assert.equal(fixed.translationPrompt, base.translationPrompt);
+  assert.equal(fixed.contextPrompt, base.contextPrompt);
+  assert.deepEqual(fixed.bParameters, base.bParameters);
+  assert.deepEqual(fixed.translationParameters, base.translationParameters);
 });
 test("invalid ranges and empty/oversize prompts are rejected", () => {
   const s = defaults();
@@ -175,17 +198,25 @@ test("editing the source rejects a late B even without network cooperation", asy
   await assert.rejects(pending, /source changed/);
   assert.equal(repo.snapshot().materials[0].b, "Previous B.");
 });
-test("chain snapshots edited prompt and fixed target B2, not new settings during response", async () => {
+test("chain uses fixed prompts and parameters, and ignores saved prompt edits", async () => {
   const { repo } = memory(materialData()); await repo.hydrate();
-  const seen: { prompt: string; target?: string }[] = [];
-  const actions = createMaterialActions(repo, { async transcribe() { return { text: "A", cost: null }; }, async chat(_model, prompt, _source, _params, _signal, context) {
-    seen.push({ prompt, target: context?.targetCEFR });
+  const seen: { prompt: string; target?: string; temperature?: number }[] = [];
+  await repo.update(d => {
+    d.settings.bPrompt = "previous custom B prompt";
+    d.settings.translationPrompt = "previous custom translation prompt";
+    d.settings.bParameters = { temperature: 1.2, top_p: 0.8, max_tokens: 512 };
+  });
+  const actions = createMaterialActions(repo, { async transcribe() { return { text: "A", cost: null }; }, async chat(_model, prompt, _source, params, _signal, context) {
+    seen.push({ prompt, target: context?.targetCEFR, temperature: params.temperature });
     if (seen.length === 1) await repo.update(d => { d.settings.bPrompt = "New setting during request"; });
     return result(seen.length === 1 ? "New B." : "Перевод.");
   } });
   await actions.generateB("m");
   assert.equal(seen[0].prompt, defaults().bPrompt); assert.equal(seen[0].target, "B2");
-  assert.equal(seen[1].prompt, defaults().translationPrompt); assert.equal(bIsStale(repo.snapshot().materials[0], repo.snapshot().settings), true);
+  assert.equal(seen[0].temperature, defaults().bParameters.temperature);
+  assert.equal(seen[1].prompt, defaults().translationPrompt);
+  assert.equal(seen[1].temperature, defaults().translationParameters.temperature);
+  assert.equal(bIsStale(repo.snapshot().materials[0], repo.snapshot().settings), false);
 });
 test("no A without audio and no B without A", async () => {
   const d = materialData(); d.materials[0].audio = null; d.materials[0].a = "";

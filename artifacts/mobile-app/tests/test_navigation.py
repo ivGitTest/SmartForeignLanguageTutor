@@ -10,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from tests.helpers import (
     assert_app_healthy, fill, go_back, hide_keyboard, open_word, save_material,
-    scroll_to_text, tap, tap_confirm, tap_tab, text_is_visible, wait_accessible, wait_text,
+    tap, tap_confirm, tap_tab, text_is_visible, wait_accessible, wait_text,
 )
 
 APP_PACKAGE = "com.englishlab.mobile"
@@ -23,7 +23,7 @@ SCREEN_TESTS = {
     "(tabs)/learning": "test_primary_tab_round_trips",
     "settings": "test_settings_returns_to_originating_tab",
     "key-connection": "test_nested_settings_round_trip",
-    "ai-settings": "test_nested_settings_round_trip",
+    "ai-settings": "test_ai_settings_route_redirects_to_settings",
     "word/[id]": "test_word_screen_round_trip",
     "material/[id]": "test_material_back_returns_to_list",
     "+not-found": "test_missing_routes_have_a_working_exit",
@@ -67,17 +67,13 @@ def test_settings_returns_to_originating_tab(android_driver, sample_dictionary, 
 
 
 @pytest.mark.parametrize("back", ["header", "system"])
-@pytest.mark.parametrize("link,heading", [
-    ("Connect or manage key", "Connect your own key"),
-    ("Prompts & parameters", "B · Improve to B2"),
-])
-def test_nested_settings_round_trip(android_driver, sample_dictionary, link, heading, back):
+def test_nested_settings_round_trip(android_driver, sample_dictionary, back):
     driver = android_driver
     tap_tab(driver, "Dictionary")
     tap(driver, "Settings")
     wait_text(driver, "Settings")
-    tap(driver, link, scroll_text=link)
-    wait_text(driver, heading)
+    tap(driver, "Connect or manage key", scroll_text="Connect or manage key")
+    wait_text(driver, "Connect your own key")
     assert_app_healthy(driver)
     go_back(driver, back)
     wait_accessible(driver, "Connect or manage key")
@@ -157,25 +153,6 @@ def test_missing_routes_have_a_working_exit(
     assert_app_healthy(driver)
 
 
-def assert_prompt_fits_screen(driver, disclosure: str, field_label: str) -> None:
-    tap(driver, disclosure, scroll_text=disclosure)
-    scroll_to_text(driver, field_label)
-    original = wait_accessible(driver, field_label).get_attribute("text")
-    for value in (original, ("Long instruction with wrapping. " * 30) + ("x" * 200)):
-        if value != original:
-            fill(driver, field_label, value)
-            hide_keyboard(driver)
-        rect = wait_accessible(driver, field_label).rect
-        screen_width = driver.get_window_size()["width"]
-        assert rect["x"] > 0, f"{field_label} starts outside its screen margin."
-        assert rect["x"] + rect["width"] <= screen_width - rect["x"] + 2, (
-            f"{field_label} extends beyond its symmetric horizontal margins "
-            f"on the {screen_width}px screen: {rect}."
-        )
-    fill(driver, field_label, original)
-    hide_keyboard(driver)
-
-
 def assert_app_version_is_present(driver) -> None:
     app_version = json.loads((APP_ROOT / "app.json").read_text(encoding="utf-8"))["expo"]["version"]
     assert re.search(
@@ -202,8 +179,7 @@ def test_primary_modes_and_nested_screens_are_reachable(
     ))
     tap_tab(driver, "Dictionary")
 
-    # Reach the local key-management and AI-settings screens without entering a key
-    # or sending any generation request.
+    # Reach local key management without entering a key or sending an AI request.
     tap(driver, "Settings")
     wait_text(driver, "Settings")
     assert_app_version_is_present(driver)
@@ -211,60 +187,20 @@ def test_primary_modes_and_nested_screens_are_reachable(
     wait_text(driver, "Connect your own key")
     driver.back()
     wait_text(driver, "Settings")
-    tap(driver, "Prompts & parameters", scroll_text="Prompts & parameters")
-    wait_text(driver, "AI settings")
-    assert text_is_visible(driver, "B · Improve to B2")
-    driver.back()
-    wait_text(driver, "Settings")
     driver.back()
     wait_text(driver, "Dictionary")
 
 
-def test_ai_settings_edit_save_reopen_and_restore_without_requests(android_driver, sample_dictionary):
+def test_ai_settings_route_redirects_to_settings(android_driver, sample_dictionary):
+    """The retired form route redirects, including when opened from an old link."""
     driver = android_driver
-    tap_tab(driver, "Dictionary")
-    tap(driver, "Settings")
+    driver.execute_script("mobile: deepLink", {
+        "url": "mobile-app:///ai-settings", "package": APP_PACKAGE,
+    })
     wait_text(driver, "Settings")
-    tap(driver, "Prompts & parameters", scroll_text="Prompts & parameters")
-    wait_text(driver, "AI settings")
-    assert not driver.find_elements("accessibility id", "B instruction")
-    for disclosure, field in (
-        ("Edit B instruction", "B instruction"),
-        ("Edit full translation instruction", "Translation instruction"),
-        ("Edit contextual translation instruction", "Context instruction"),
-    ):
-        assert_prompt_fits_screen(driver, disclosure, field)
-        tap(driver, disclosure)
-    fill(driver, "A temperature · 0–1", "0.3")
-    hide_keyboard(driver)
-    tap(driver, "Edit B instruction")
-    scroll_to_text(driver, "B instruction")
-    original = wait_accessible(driver, "B instruction").get_attribute("text")
-    fill(driver, "B instruction", "Improve to B2 without changing the meaning. Test instruction.")
-    hide_keyboard(driver)
-    tap(driver, "Save AI settings", scroll_text="Save AI settings")
-    wait_text(driver, "AI settings saved locally. Older B or Translation may now be out of date.")
-    driver.back()
-    wait_text(driver, "Settings")
-    tap(driver, "Prompts & parameters", scroll_text="Prompts & parameters")
-    wait_text(driver, "AI settings")
-    assert wait_accessible(driver, "A temperature · 0–1").get_attribute("text") == "0.3"
-    tap(driver, "Edit B instruction")
-    scroll_to_text(driver, "B instruction")
-    assert wait_accessible(driver, "B instruction").get_attribute("text").endswith("Test instruction.")
-    driver.back()
-    if text_is_visible(driver, "Unsaved changes"):
-        tap_confirm(driver)
-    wait_text(driver, "Settings")
-    tap(driver, "Restore defaults…", scroll_text="Restore defaults…")
-    tap_confirm(driver)
-    tap(driver, "Prompts & parameters", scroll_text="Prompts & parameters")
-    wait_text(driver, "AI settings")
-    assert wait_accessible(driver, "A temperature · 0–1").get_attribute("text") != "0.3"
-    tap(driver, "Edit B instruction")
-    scroll_to_text(driver, "B instruction")
-    assert wait_accessible(driver, "B instruction").get_attribute("text") == original
-    tap_tab(driver, "Dictionary")
+    wait_accessible(driver, "Connect or manage key")
+    assert not text_is_visible(driver, "Save AI settings")
+    assert_app_healthy(driver)
 
 
 @pytest.mark.parametrize("link", ["Open provider account page", "@ivTelegram"])

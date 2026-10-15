@@ -2,13 +2,13 @@ import { z } from "zod";
 
 export const A_MODELS = ["openai/whisper-large-v3", "openai/whisper-large-v3-turbo", "openai/gpt-4o-mini-transcribe"] as const;
 export const B_MODELS = ["openai/gpt-4.1-mini", "google/gemini-2.5-flash", "openai/gpt-4.1"] as const;
-export const B_PROMPT = `Переформулируй английский текст пользователя с исходного уровня B1 в указанный целевой уровень B2 или C1.
+export const B_PROMPT = `Переформулируй английский текст пользователя с исходного уровня B1 до уровня B2.
 Ответ только на английском, в форме переформулированного текста.
 Сохрани факты, имена, числа, даты, участников, причинные связи, время событий, отрицания, условия, обязательства и степень уверенности.
 Не добавляй опыт, достижения, причины и детали, которых не было во входе.
 Исправляй грамматику, выбирай естественные выражения и конструкции целевого уровня.
 Не вставляй идиомы и фразовые глаголы искусственно только ради сложности.
-Для B2 используй естественную, более точную речь; для C1 — более гибкое и нюансированное выражение той же мысли.
+Используй естественную, более точную речь уровня B2, сохраняя разговорный характер исходного текста.
 Сохраняй разговорный характер исходного текста; не превращай повседневную речь в академическое эссе.
 Не сокращай существенное содержание и не расширяй его новыми утверждениями.
 Если смысл неоднозначен или во входе отмечено неразборчивое место, не додумывай факты: сохраняй неоднозначность или маркер. Если безопасное преобразование невозможно, верни понятный отказ обработки.
@@ -42,6 +42,19 @@ export function defaults(): Settings {
     bParameters: { temperature: 0.2, top_p: 1, max_tokens: 2048 },
     translationParameters: { temperature: 0.1, top_p: 1, max_tokens: 2048 },
     consent: false,
+  };
+}
+/** AI tuning is fixed in the MVP; preserve the user's model/language choices only. */
+export function fixedAISettings(settings: Settings): Settings {
+  const fixed = defaults();
+  return {
+    ...settings,
+    aTemperature: fixed.aTemperature,
+    bPrompt: fixed.bPrompt,
+    translationPrompt: fixed.translationPrompt,
+    contextPrompt: fixed.contextPrompt,
+    bParameters: fixed.bParameters,
+    translationParameters: fixed.translationParameters,
   };
 }
 const date = z.number().finite().nonnegative();
@@ -101,8 +114,14 @@ export type AppData = z.infer<typeof dataSchema>;
 export function initialData(): AppData {
   return { version: 1, cards: [], materials: [], settings: defaults(), session: null, lastMaterialId: null, pendingAudio: null, pendingFileDeletes: [], microphoneNoticeSeen: false, reviewEvents: [] };
 }
-export const bFingerprint = (s: Settings) => JSON.stringify([s.bModel, s.bPrompt, s.bParameters]);
-export const translationFingerprint = (s: Settings) => JSON.stringify([s.bModel, s.translationPrompt, s.translationParameters]);
+export const bFingerprint = (s: Settings) => {
+  const fixed = fixedAISettings(s);
+  return JSON.stringify([fixed.bModel, fixed.bPrompt, fixed.bParameters]);
+};
+export const translationFingerprint = (s: Settings) => {
+  const fixed = fixedAISettings(s);
+  return JSON.stringify([fixed.bModel, fixed.translationPrompt, fixed.translationParameters]);
+};
 export const bIsStale = (m: Material, s: Settings) => !!m.b && (m.bARevision !== m.aRevision || m.bFingerprint !== bFingerprint(s));
 export const translationIsStale = (m: Material, s: Settings) => !!m.translation && (bIsStale(m, s) || m.translationBVersion !== m.bVersion || m.translationFingerprint !== translationFingerprint(s));
 export const id = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
