@@ -43,7 +43,7 @@ AI operations require an internet connection and the user’s OpenRouter key. Re
 | Manage local materials and restore app defaults | Connect/verify an OpenRouter key; refresh model availability and pricing |
 | Speak text when a compatible English system voice is installed locally | Download or use a network-only system voice, if that is what Android provides |
 
-The browser preview is limited: it can exercise Dictionary and Learning with browser-local storage, but it does not simulate microphone recording or provide Android-protected key storage. The Android app uses SQLite for learning data and private app files for audio. Data is not cloud-synced or automatically backed up; uninstalling the app or clearing its data can remove it.
+The Android app uses SQLite for learning data and private app files for audio. Data is not cloud-synced or automatically backed up; uninstalling the app or clearing its data can remove it.
 
 ## Repository structure
 
@@ -63,11 +63,11 @@ artifacts/mobile-app/
 ├── hooks/                  Shared React hooks
 ├── plugins/                Expo config plugins
 ├── scripts/                APK build and test scripts
-├── server/                 Static browser-preview server; not an AI backend
+├── server/                 Static browser-preview server
 └── tests/                  TypeScript domain/SQLite tests, pytest UI tests,
                             and fixtures
 
-docs/mvp/                   Approved MVP requirements and build runbook
+docs/mvp/                   MVP requirements and technical documentation
 ```
 
 ## Delivery status and roadmap
@@ -85,23 +85,26 @@ These checkboxes describe the code, **not completed device acceptance**.
 
 ### Still required before full MVP acceptance
 
-- [ ] Build and install a preview APK through the user’s Expo EAS account.
+- [ ] Build and install a preview APK with Expo EAS.
 - [ ] Verify recording, playback, SQLite persistence, permissions, interruptions, and protected key storage on Android 13/14.
 - [ ] Test each enabled model with real requests: transcript fidelity, B1 → B2 meaning preservation, Russian translation, contextual translation, and provider errors.
-- [ ] Complete Android layout, offline, backup, and privacy checks. Real paid AI calls and device acceptance have not yet been completed.
+- [ ] Complete Android layout, offline, backup, and privacy checks. Real AI requests and device acceptance have not yet been completed.
 
 ### Planned after the MVP
 
-- [ ] Russian interface localization, with Russian as the default interface language.
-- [ ] Let users choose their native language and translation language; Russian remains the MVP default.
-- [ ] Add other improvement-level pairs, such as B1 → C1.
+- [ ] Add interface-language selection and Russian localization; Russian is the default.
+- [ ] Add other learning languages, native/translation language options, and AI providers.
+- [ ] Add other CEFR improvement-level pairs, such as B1 → C1.
+- [ ] Add FSRS as another spaced-repetition algorithm.
+- [ ] Export vocabulary in an Anki-compatible format.
+- [ ] Export materials to CSV, including ID, date/time, original text, and improved text.
+- [ ] Let users configure the number of cards in a learning session.
+- [ ] Let users choose where audio recordings are stored.
 - [ ] Add system and dark themes.
-- [ ] Export vocabulary to CSV/Anki.
-- [ ] Evaluate FSRS as an alternative scheduler and allow the user to configure session size.
 
 ## Development checks
 
-Run these commands from the monorepo root:
+Run these commands from the repository root:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -109,7 +112,18 @@ pnpm --filter @workspace/mobile-app run typecheck
 pnpm --filter @workspace/mobile-app run test
 ```
 
-APK setup and build steps are documented in [`docs/mvp/expo-build-runbook.md`](../../docs/mvp/expo-build-runbook.md). Product scope and technical decisions are in [`docs/mvp/`](../../docs/mvp/).
+Product scope and technical decisions are in [`docs/mvp/`](../../docs/mvp/).
+
+## Build an APK
+
+The repository uses pnpm workspaces. Install dependencies from the repository root, then start an Android preview build:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm --filter @workspace/mobile-app run build:apk
+```
+
+The build runs through Expo EAS and requires access to the Expo project configured for this app. A fork must be linked to its own Expo project and have its app configuration and build settings updated before building. See the Expo EAS documentation for account setup and build requirements.
 
 # Русский
 
@@ -154,7 +168,7 @@ Smart Lang Tutor — Android-приложение, которое превращ
 | Работа с локальными материалами и восстановление настроек | Подключение/проверка ключа OpenRouter; обновление доступности и тарифов моделей |
 | Озвучивание текста при наличии установленного локального английского голоса | Загрузка или использование сетевого системного голоса, если Android предоставляет такой вариант |
 
-В браузерном preview можно проверять Словарь и Обучение с локальным браузерным хранилищем, но запись с микрофона там не симулируется и защищённое хранилище Android для ключа недоступно. Android-приложение хранит учебные данные в SQLite, аудио — в приватных файлах приложения. Облачной синхронизации и автоматических резервных копий нет; удаление приложения или его данных может привести к потере сохранённых данных.
+Android-приложение хранит учебные данные в SQLite, аудио — в приватных файлах приложения. Облачной синхронизации и автоматических резервных копий нет; удаление приложения или его данных может привести к потере сохранённых данных.
 
 ## Структура репозитория
 
@@ -196,23 +210,26 @@ docs/mvp/                   Согласованные требования MVP 
 
 ### Осталось до полной приёмки MVP
 
-- [ ] Собрать и установить preview APK через Expo EAS аккаунт пользователя.
+- [ ] Собрать и установить preview APK через Expo EAS.
 - [ ] Проверить на Android 13/14 запись, воспроизведение, сохранение SQLite, разрешения, прерывания и защищённое хранение ключа.
 - [ ] Проверить каждую включённую модель реальными запросами: точность транскрибации, сохранение смысла при B1 → B2, перевод на русский, контекстный перевод и ошибки поставщиков.
-- [ ] Завершить проверки компоновки Android, офлайн-сценариев, резервного копирования и приватности. Реальные платные запросы ИИ и приёмка на устройстве ещё не выполнены.
+- [ ] Завершить проверки компоновки Android, офлайн-сценариев, резервного копирования и приватности. Реальные запросы ИИ и приёмка на устройстве ещё не выполнены.
 
 ### Запланировано после MVP
 
-- [ ] Локализация интерфейса на русский язык; русский язык — по умолчанию.
-- [ ] Выбор родного языка пользователя и языка перевода; русский остаётся значением MVP по умолчанию.
-- [ ] Другие пары уровней улучшения, например B1 → C1.
+- [ ] Выбор языка интерфейса и локализация на русский; русский — по умолчанию.
+- [ ] Поддержка других языков обучения, родного языка и языка перевода, а также провайдеров ИИ.
+- [ ] Другие пары уровней CEFR, например B1 → C1.
+- [ ] Поддержка FSRS как дополнительного алгоритма интервального повторения.
+- [ ] Экспорт словаря в формате, совместимом с Anki.
+- [ ] Экспорт материалов в CSV: ID, дата и время, исходный и улучшенный тексты.
+- [ ] Настройка количества карточек в учебной сессии.
+- [ ] Выбор места хранения аудиозаписей.
 - [ ] Системная и тёмная темы.
-- [ ] Экспорт словаря в CSV/Anki.
-- [ ] Оценка FSRS как альтернативного планировщика и настройка размера учебной сессии.
 
 ## Команды проверки
 
-Запускать из корня monorepo:
+Запускать из корня репозитория:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -220,4 +237,4 @@ pnpm --filter @workspace/mobile-app run typecheck
 pnpm --filter @workspace/mobile-app run test
 ```
 
-Настройка и сборка APK описаны в [`docs/mvp/expo-build-runbook.md`](../../docs/mvp/expo-build-runbook.md). Требования и технические решения находятся в [`docs/mvp/`](../../docs/mvp/).
+Для сборки APK установите зависимости и запустите `pnpm --filter @workspace/mobile-app run build:apk` из корня репозитория. Сборка выполняется через Expo EAS и требует доступа к настроенному проекту Expo. Для форка подключите собственный проект Expo и обновите конфигурацию приложения и сборки. Подробности — в документации Expo EAS. Требования и технические решения находятся в [`docs/mvp/`](../../docs/mvp/).
