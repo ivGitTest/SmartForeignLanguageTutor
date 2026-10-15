@@ -33,7 +33,7 @@ export default function Materials() {
   }
   return <FlatList data={materials} keyExtractor={m => m.id} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" style={{ flex: 1, backgroundColor: c.background }} contentContainerStyle={{ padding: 20, paddingBottom: 30, gap: 10, width: "100%", maxWidth: 640, alignSelf: "center" }}
     ListHeaderComponent={<View style={{ gap: 18, paddingBottom: 8 }}>
-      <View><Heading>Materials</Heading><Body muted>Record. Refine. Make it yours.</Body></View>
+      <View><Heading>Materials</Heading></View>
       <Recorder disabled={!!active || task.pending || !!data.pendingAudio} visible={!data.pendingAudio} />
       {data.pendingAudio ? <Card><Heading small>Keep this recording?</Heading><Body muted>{data.pendingAudio.duration.toFixed(1)}s · {(data.pendingAudio.size / 1024).toFixed(0)} KiB</Body>
         <AudioPlayer uri={data.pendingAudio.uri} />
