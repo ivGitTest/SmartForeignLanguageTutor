@@ -5,10 +5,12 @@ from tests.helpers import (
     fill,
     hide_keyboard,
     open_word,
+    scroll_to_text,
     tap,
     tap_confirm,
     tap_tab,
     text_is_visible,
+    wait_accessible,
     wait_text,
 )
 
@@ -78,11 +80,26 @@ def test_dictionary_validation_duplicate_edit_search_and_delete(
 def test_dictionary_tabs_and_vocabulary_controls(android_driver, sample_dictionary):
     driver = android_driver
     tap_tab(driver, "Dictionary")
-    assert text_is_visible(driver, "Your words. Ready when you are.")
-    assert text_is_visible(driver, "Search dictionary")
+    assert text_is_visible(driver, "Dictionary")
+    assert wait_accessible(driver, "Search dictionary").is_displayed()
     assert text_is_visible(driver, "Start learning · 10 cards")
     tap(driver, "Add")
     wait_text(driver, "Add a word")
     assert text_is_visible(driver, "Save card")
     driver.back()
     wait_text(driver, "Dictionary")
+
+
+def test_dictionary_header_stays_visible_when_word_list_scrolls(
+    android_driver, sample_dictionary
+):
+    driver = android_driver
+    tap_tab(driver, "Dictionary")
+    # The first fixture word is oldest and sorts to the bottom of the recent-first list.
+    target = sample_dictionary["words"][0]["expression"]
+    scroll_to_text(driver, target)
+    assert text_is_visible(driver, target)
+    assert text_is_visible(driver, "Dictionary")
+    assert text_is_visible(driver, "Start learning · 10 cards")
+    assert text_is_visible(driver, "Your vocabulary · 10")
+    assert wait_accessible(driver, "Search dictionary").is_displayed()

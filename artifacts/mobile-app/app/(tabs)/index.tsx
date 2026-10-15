@@ -15,9 +15,9 @@ export default function Dictionary() {
   const words = data.cards.filter(word => `${word.expression} ${word.translation}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())).sort((a, b) => b.createdAt - a.createdAt);
   const remaining = data.session && data.session.index < data.session.ids.length;
   const count = eligible(data.cards).length;
-  return <FlatList data={words} keyExtractor={item => item.id} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled"
+  return <FlatList data={words} keyExtractor={item => item.id} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" stickyHeaderIndices={[0]}
     style={{ flex: 1, backgroundColor: c.background }} contentContainerStyle={{ padding: 20, paddingBottom: 30, width: "100%", maxWidth: 640, alignSelf: "center" }}
-    ListHeaderComponent={<View style={{ gap: 17, paddingBottom: 14 }}>
+    ListHeaderComponent={<View style={{ gap: 17, paddingBottom: 14, backgroundColor: c.background }}>
       <View><Heading>Dictionary</Heading></View>
       <Button title={remaining ? "Resume learning" : `Start learning${count ? ` · ${count} cards` : ""}`} icon="school" disabled={!remaining && !count} onPress={() => void task.run(async () => { await repo.update(d => startSession(d)); router.push("/learning"); })} />
       <Row><View><Body style={{ fontFamily: "DMSans_700Bold" }}>Your vocabulary · {data.cards.length}</Body><Body muted style={{ fontSize: 12 }}>English → Russian</Body></View><Button title="Add" icon="add" onPress={() => router.push("/word/new")} /></Row>

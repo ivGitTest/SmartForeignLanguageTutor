@@ -38,6 +38,13 @@ def test_dictionary_context_selection_normalization_and_fixture_storage():
     run_typescript(APP / "tests" / "fixtures" / "offline-scenarios.ts", "dictionary")
 
 
+@pytest.mark.dictionary
+def test_dictionary_header_is_pinned_over_an_opaque_background():
+    source = (APP / "app" / "(tabs)" / "index.tsx").read_text(encoding="utf-8")
+    assert "stickyHeaderIndices={[0]}" in source
+    assert "paddingBottom: 14, backgroundColor: c.background" in source
+
+
 @pytest.mark.materials
 def test_material_chain_mocked_success_errors_cancel_and_stale_results():
     run_typescript(
