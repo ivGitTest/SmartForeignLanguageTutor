@@ -69,6 +69,21 @@ def test_record_discard_save_search_resume_sort_and_delete(
     assert newer_position >= 0 and older_position >= 0
     assert newer_position < older_position, "Materials should be sorted newest first."
 
+    date_metadata = driver.find_element(
+        AppiumBy.XPATH,
+        f"//*[@content-desc and contains(@content-desc, 'Date and duration for {newer}:')]",
+    )
+    content_metadata = driver.find_element(
+        AppiumBy.XPATH,
+        f"//*[@content-desc and contains(@content-desc, 'Available content for {newer}:')]",
+    )
+    assert abs(date_metadata.rect["y"] - content_metadata.rect["y"]) <= 2, (
+        "The date and artifact statuses should share one compact metadata row."
+    )
+    assert content_metadata.rect["x"] > date_metadata.rect["x"], (
+        "Artifact statuses should sit to the right of the date."
+    )
+
     # Local search filters titles and opening either row updates the last-material link.
     fill(driver, "Search materials", older)
     hide_keyboard(driver)

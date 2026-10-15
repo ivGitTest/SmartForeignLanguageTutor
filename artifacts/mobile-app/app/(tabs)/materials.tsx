@@ -55,13 +55,19 @@ export default function Materials() {
       </View>
       <View style={{ height: 1, backgroundColor: c.border }} />
     </View>}
-    renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => { void repo.update(d => { d.lastMaterialId = item.id; }); router.push(`/material/${item.id}`); }}>
-      <Card style={{ paddingVertical: 12, paddingHorizontal: 14, gap: 4 }}>
-        <Row><Body numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, fontFamily: "DMSans_700Bold" }}>{item.title}</Body><MaterialIcons name="chevron-right" size={20} color={c.mutedForeground} /></Row>
-        <Body muted numberOfLines={1} style={{ fontSize: 11, lineHeight: 18 }}>{new Date(item.createdAt).toLocaleDateString("en-GB")} · {new Date(item.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}{item.audio ? ` · ${Math.round(item.audio.duration)}s` : " · audio removed"}</Body>
-        <Body muted style={{ fontSize: 11, lineHeight: 17 }}>{[item.audio && "Audio", item.a && "A", item.b && "B", item.translation && "Translation"].filter(Boolean).join(" · ")}</Body>
-      </Card>
-    </Pressable>}
+    renderItem={({ item }) => {
+      const dateAndDuration = `${new Date(item.createdAt).toLocaleDateString("en-GB")} · ${new Date(item.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}${item.audio ? ` · ${Math.round(item.audio.duration)}s` : " · audio removed"}`;
+      const attributes = [item.audio && "Audio", item.a && "A", item.b && "B", item.translation && "Translation"].filter(Boolean).join(" · ");
+      return <Pressable accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => { void repo.update(d => { d.lastMaterialId = item.id; }); router.push(`/material/${item.id}`); }}>
+        <Card style={{ paddingVertical: 12, paddingHorizontal: 14, gap: 4 }}>
+          <Row><Body numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, fontFamily: "DMSans_700Bold" }}>{item.title}</Body><MaterialIcons name="chevron-right" size={20} color={c.mutedForeground} /></Row>
+          <Row style={{ gap: 6 }}>
+            <Body accessibilityLabel={`Date and duration for ${item.title}: ${dateAndDuration}`} muted numberOfLines={1} ellipsizeMode="tail" style={{ flex: 1, minWidth: 0, fontSize: 10, lineHeight: 14 }}>{dateAndDuration}</Body>
+            <Body accessibilityLabel={`Available content for ${item.title}: ${attributes}`} muted numberOfLines={1} style={{ flexShrink: 0, fontSize: 10, lineHeight: 14, textAlign: "right" }}>{attributes}</Body>
+          </Row>
+        </Card>
+      </Pressable>;
+    }}
     ListEmptyComponent={<Card><Heading small>{query ? "No matching materials" : "A place for your English"}</Heading><Body muted>{query ? "Try another word or clear the search." : "Your recordings and their linked texts will appear here. Nothing is uploaded until you choose an AI action."}</Body></Card>}
   />;
 }

@@ -46,6 +46,20 @@ def test_dictionary_header_is_pinned_over_an_opaque_background():
 
 
 @pytest.mark.materials
+def test_material_date_and_artifact_statuses_share_a_right_aligned_row():
+    source = (APP / "app" / "(tabs)" / "materials.tsx").read_text(encoding="utf-8")
+    row = re.search(r'<Row style=\{\{ gap: 6 \}\}>(.*?)</Row>', source, re.DOTALL)
+    assert row, "Material metadata must use one compact row."
+    content = row.group(1)
+    assert "{dateAndDuration}" in content
+    assert "{attributes}" in content
+    assert content.count("numberOfLines={1}") == 2
+    assert 'textAlign: "right"' in content
+    assert all(f'"{status}"' in source for status in ("Audio", "A", "B", "Translation"))
+    assert 'MaterialIcons name="chevron-right"' in source
+
+
+@pytest.mark.materials
 def test_material_chain_mocked_success_errors_cancel_and_stale_results():
     run_typescript(
         APP / "tests" / "domain.test.ts",
