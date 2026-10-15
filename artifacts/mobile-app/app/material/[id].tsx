@@ -76,7 +76,7 @@ export default function MaterialScreen() {
   return <Screen>
     <View><Label>AUDIO → A → B → TRANSLATION</Label><Heading>Make it your own.</Heading></View>
     <Card>
-      <Field label="Material title" value={title} onChangeText={setTitle} maxLength={160} />
+      <Field label="Material title" labelHidden value={title} onChangeText={setTitle} maxLength={160} />
       {title !== m.title && <Button title="Save title" secondary disabled={task.pending} onPress={() => void task.run(() => repo.update(d => {
         if (!title.trim()) throw new Error("Enter a title.");
         const material = d.materials.find(x => x.id === id); if (material) material.title = title.trim();

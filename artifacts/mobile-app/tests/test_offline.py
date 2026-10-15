@@ -78,6 +78,16 @@ def test_demo_materials_are_limited_to_the_development_web_preview():
 
 
 @pytest.mark.materials
+def test_material_title_caption_is_hidden_but_kept_accessible():
+    material_screen = (APP / "app" / "material" / "[id].tsx").read_text(encoding="utf-8")
+    ui = (APP / "components" / "ui.tsx").read_text(encoding="utf-8")
+
+    assert '<Field label="Material title" labelHidden' in material_screen
+    assert "accessibilityLabel={label}" in ui
+    assert "{!labelHidden && <Body" in ui
+
+
+@pytest.mark.materials
 def test_material_chain_mocked_success_errors_cancel_and_stale_results():
     run_typescript(
         APP / "tests" / "domain.test.ts",
