@@ -12,6 +12,7 @@ import { confirm } from "@/core/confirm";
 import { useColors } from "@/hooks/useColors";
 import * as Application from "expo-application";
 import Constants, { ExecutionEnvironment } from "expo-constants";
+import appInfo from "@/config/app_info.json";
 
 export default function SettingsScreen() {
   const { data, repo, active } = useApp();
@@ -115,7 +116,7 @@ export default function SettingsScreen() {
       <Heading small>About this app</Heading>
       <Row>
         <Body>Developer:</Body>
-        <Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }}>Ivan Rybakov</Body>
+        <Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }}>{appInfo.developerName}</Body>
       </Row>
       <Row>
         <Body>Version:</Body>
@@ -123,10 +124,10 @@ export default function SettingsScreen() {
       </Row>
       <Row>
         <Body>Support:</Body>
-        <Pressable accessibilityRole="link" accessibilityLabel="@ivTelegram" style={{ minHeight: 44, justifyContent: "center" }} onPress={() => void task.run(async () => {
-          try { await Linking.openURL("https://t.me/ivTelegram"); } catch { throw new Error("Could not open Telegram. Open t.me/ivTelegram in your browser."); }
+        <Pressable accessibilityRole="link" accessibilityLabel={appInfo.supportLabel} style={{ minHeight: 44, justifyContent: "center" }} onPress={() => void task.run(async () => {
+          try { await Linking.openURL(appInfo.supportUrl); } catch { throw new Error(`Could not open the support link. Open ${appInfo.supportUrl.replace(/^https?:\/\//, "")} in your browser.`); }
         })}>
-          <Body style={{ color: c.primary, fontFamily: "DMSans_700Bold" }}>@ivTelegram</Body>
+          <Body style={{ color: c.primary, fontFamily: "DMSans_700Bold" }}>{appInfo.supportLabel}</Body>
         </Pressable>
       </Row>
     </Card>

@@ -9,11 +9,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from tests.helpers import (
     assert_app_healthy, fill, go_back, hide_keyboard, open_word, save_material,
-    tap, tap_confirm, tap_tab, text_is_visible, wait_accessible, wait_text,
+    scroll_to_text, tap, tap_confirm, tap_tab, text_is_visible, wait_accessible, wait_text,
 )
 
 APP_PACKAGE = "com.englishlab.mobile"
 APP_ROOT = Path(__file__).resolve().parents[1]
+APP_INFO = json.loads((APP_ROOT / "config" / "app_info.json").read_text(encoding="utf-8"))
 
 # Each page route (not navigator layouts) has an explicit round-trip test below.
 SCREEN_TESTS = {
@@ -63,6 +64,16 @@ def test_settings_returns_to_originating_tab(android_driver, sample_dictionary, 
     go_back(driver, back)
     # Check actual screen content, not a tab label which is always visible.
     assert_primary_screen(driver, origin)
+
+
+def test_settings_shows_configured_developer_and_support(android_driver, sample_dictionary):
+    driver = android_driver
+    tap_tab(driver, "Dictionary")
+    tap(driver, "Settings")
+    scroll_to_text(driver, APP_INFO["developerName"])
+    wait_text(driver, APP_INFO["developerName"])
+    wait_accessible(driver, APP_INFO["supportLabel"])
+    assert_app_healthy(driver)
 
 
 @pytest.mark.parametrize("back", ["header", "system"])
@@ -198,7 +209,7 @@ def test_ai_settings_route_redirects_to_settings(android_driver, sample_dictiona
     assert_app_healthy(driver)
 
 
-@pytest.mark.parametrize("link", ["Open provider account page", "@ivTelegram"])
+@pytest.mark.parametrize("link", ["Open provider account page", APP_INFO["supportLabel"]])
 def test_external_links_open_a_handler_and_return_to_app(android_driver, sample_dictionary, link):
     driver = android_driver
     tap_tab(driver, "Dictionary")

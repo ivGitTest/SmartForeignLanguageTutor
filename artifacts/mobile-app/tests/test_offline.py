@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 import ast
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -262,3 +263,27 @@ def test_settings_screen_omits_setup_eyebrow():
 
     assert "<Heading>Settings</Heading>" in source
     assert "YOUR SETUP" not in source
+
+
+def test_developer_identity_and_support_contact_are_only_in_app_info_config():
+    config_path = APP / "config" / "app_info.json"
+    app_info = json.loads(config_path.read_text(encoding="utf-8"))
+    personal_values = [
+        app_info["developerName"],
+        app_info["supportLabel"],
+        app_info["supportUrl"],
+    ]
+    assert all(isinstance(value, str) and value.strip() for value in personal_values)
+    assert app_info["supportUrl"].startswith("https://")
+
+    source_suffixes = {".ts", ".tsx", ".js", ".jsx", ".py", ".html", ".md"}
+    ignored_dirs = {"node_modules", "dist", ".expo"}
+    for path in APP.rglob("*"):
+        if not path.is_file() or path == config_path or path.suffix not in source_suffixes:
+            continue
+        if ignored_dirs.intersection(path.parts):
+            continue
+        content = path.read_text(encoding="utf-8")
+        assert not any(value in content for value in personal_values), (
+            f"Developer information must stay in config/app_info.json, found in {path}"
+        )

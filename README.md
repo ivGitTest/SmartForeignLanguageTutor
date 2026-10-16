@@ -31,6 +31,10 @@ AI prompt text and request parameters are kept outside the TypeScript source:
 
 Edit the JSON values, then rebuild and reinstall the app for the changes to take effect. The app validates these files at startup: A temperature must be 0–1; text-model temperature 0–2; `top_p` greater than 0 and up to 1; `max_tokens` 64–4096; optional `seed` 0–2147483647. The model lists and validation rules remain in the app source.
 
+### Configure app information for a fork
+
+Edit `config/app_info.json` to set the developer name and support contact shown on the Settings screen. Set `developerName`, `supportLabel`, and `supportUrl` together; the displayed support link and its destination come from this file. Rebuild the app after editing.
+
 ## AI workflow
 
 1. **Record and save audio.** Recording is a local Android operation. No audio is sent until the user starts transcription.
@@ -66,7 +70,7 @@ artifacts/mobile-app/
 │   └── key-connection.tsx   OpenRouter key connection
 ├── assets/                 App images and fonts
 ├── components/             Shared UI, recorder, audio player, text selection
-├── config/                 Editable AI prompts and request-parameter defaults
+├── config/                 Editable app information, AI prompts, and request-parameter defaults
 ├── constants/              App-wide constants, including the app name
 ├── core/                   Domain logic, data models, persistence, AI client,
 │                           audio files, and SM-2 learning operations
@@ -165,6 +169,10 @@ Smart Lang Tutor — Android-приложение, которое превращ
 - `config/ai-parameters.json` — температура транскрибации А, параметры генерации Б и параметры перевода. Контекстный перевод использует тот же набор параметров, что и полный перевод.
 
 Измените значения в JSON, затем пересоберите и переустановите приложение. При запуске приложение проверяет файлы: температура А — 0–1; температура текстовой модели — 0–2; `top_p` — больше 0 и не выше 1; `max_tokens` — 64–4096; необязательный `seed` — 0–2147483647. Списки моделей и правила проверки остаются в исходном коде.
+
+### Настройка информации о приложении для форка
+
+Измените `config/app_info.json`, чтобы задать имя разработчика и контакт поддержки, которые показываются на экране Settings. Укажите `developerName`, `supportLabel` и `supportUrl`; подпись ссылки и её адрес берутся из этого файла. После изменения пересоберите приложение.
 
 ## Как работают ИИ-операции
 
