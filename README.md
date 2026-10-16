@@ -1,5 +1,10 @@
 [English](#english) · [Русский](#русский)
 
+## Лицензия
+
+[![License: CC BY-NC-SA 4.0](https://shields.io)](https://creativecommons.org)
+
+Этот проект распространяется под лицензией **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International**. Подробнее см. в файле [LICENSE](LICENSE).
 
 # Русский
 
