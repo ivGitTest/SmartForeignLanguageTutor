@@ -50,3 +50,10 @@ test("only B improved exposes text selection for dictionary lookup", () => {
     "B · Improved must retain its contextual translation and dictionary action.",
   );
 });
+
+test("contextual dictionary button stays beside a shrinkable selected expression", () => {
+  assert.match(
+    sourceText,
+    /<Row style=\{\{ alignItems: "flex-start" \}\}>\s*<View style=\{\{ flex: 1, minWidth: 0 \}\}>\s*<Heading small>\{selection\.expression\}<\/Heading>\s*<\/View>\s*<IconButton name=\{added \? "bookmark" : "bookmark-add"\}/,
+  );
+});

@@ -111,7 +111,12 @@ export default function MaterialScreen() {
       </Disclosure>
     </Card>}
     {selection && <Card>
-      <Row><Heading small>{selection.expression}</Heading><IconButton name={added ? "bookmark" : "bookmark-add"} label={added ? "Added to Dictionary" : "Add expression to Dictionary"} disabled={!contextTranslation || busy || added} onPress={() => void task.run(() => addCard())} /></Row>
+      <Row style={{ alignItems: "flex-start" }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Heading small>{selection.expression}</Heading>
+        </View>
+        <IconButton name={added ? "bookmark" : "bookmark-add"} label={added ? "Added to Dictionary" : "Add expression to Dictionary"} disabled={!contextTranslation || busy || added} onPress={() => void task.run(() => addCard())} />
+      </Row>
       {contextTranslation ? <Body>{contextTranslation}</Body> : <Button title="Translate selection" secondary disabled={busy} onPress={() => void task.run(async () => {
         const version = selectionRef.current;
         const result = await translateExpression(id, selection.expression, selection.sentence, selection.text, "b");
