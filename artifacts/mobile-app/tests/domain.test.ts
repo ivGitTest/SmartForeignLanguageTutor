@@ -3,6 +3,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Repository, type Persistence } from "../core/repository";
 import { initialData, dataSchema, defaults, fixedAISettings, settingsSchema, bFingerprint, translationFingerprint, bIsStale, translationIsStale, normalizeExpression, type AppData, type Card } from "../core/model";
+import aiPrompts from "../config/ai-prompts.json";
+import aiParameters from "../config/ai-parameters.json";
 import { eligible, rate, skipDeleted, startSession } from "../core/learning";
 import { sentenceForSelection, transcriptDocument } from "../core/selection";
 import { operations } from "../core/operations";
@@ -36,9 +38,15 @@ test("recording titles use local DD.MM.YYYY/HH:MM:SS/seconds format", () => {
   assert.equal(titleForMaterial({ createdAt: date.getTime(), title: "Retained title", audio: null }), "Retained title");
 });
 
-test("defaults are fixed EN/RU/EN, B1-B2 prompts and permitted models", () => {
+test("defaults load validated prompts and parameters from config files", () => {
   const s = defaults();
   assert.equal(s.nativeLanguage, "ru");
+  assert.equal(s.aTemperature, aiParameters.a.temperature);
+  assert.deepEqual(s.bParameters, aiParameters.b);
+  assert.deepEqual(s.translationParameters, aiParameters.translation);
+  assert.equal(s.bPrompt, aiPrompts.b);
+  assert.equal(s.translationPrompt, aiPrompts.translation);
+  assert.equal(s.contextPrompt, aiPrompts.context);
   assert.equal(s.bParameters.temperature, 0.2);
   assert.equal(s.translationParameters.temperature, 0.1);
   assert.equal(s.bParameters.seed, undefined);

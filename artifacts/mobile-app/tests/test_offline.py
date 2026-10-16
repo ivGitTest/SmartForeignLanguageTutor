@@ -158,15 +158,19 @@ def test_settings_validation_and_sqlite_transactions():
 def test_ai_prompt_and_parameter_form_is_disabled_but_preserved_in_comments():
     settings = (APP / "app" / "settings.tsx").read_text(encoding="utf-8")
     retired_form = (APP / "app" / "ai-settings.tsx").read_text(encoding="utf-8")
-    defaults = (APP / "core" / "model.ts").read_text(encoding="utf-8")
+    model = (APP / "core" / "model.ts").read_text(encoding="utf-8")
+    prompts = (APP / "config" / "ai-prompts.json").read_text(encoding="utf-8")
+    parameters = (APP / "config" / "ai-parameters.json").read_text(encoding="utf-8")
     assert "Prompts & parameters" not in settings
     assert "Previous form implementation:" in retired_form
     assert "Save AI settings" in retired_form
-    assert "temperature: 0.2, top_p: 1, max_tokens: 2048" in defaults
-    assert "temperature: 0.1, top_p: 1, max_tokens: 2048" in defaults
-    assert "export const B_PROMPT" in defaults
-    assert "export const TRANSLATION_PROMPT" in defaults
-    assert "export const CONTEXT_PROMPT" in defaults
+    assert "aiPromptsFile" in model
+    assert "aiParametersFile" in model
+    assert '"temperature": 0.2' in parameters
+    assert '"temperature": 0.1' in parameters
+    assert "Переформулируй английский текст" in prompts
+    assert "Переведи текст Б" in prompts
+    assert "Переведи выделенное слово или выражение" in prompts
 
 
 @pytest.mark.navigation

@@ -22,6 +22,15 @@ The app has three independent modes: **Dictionary**, **Materials**, and **Learni
 
 Users can choose models, but **cannot edit AI prompts or generation parameters in the app**. Those values are fixed internally for the MVP. Restoring defaults resets the model and internal AI defaults without deleting vocabulary, materials, progress, or the saved key.
 
+### Configure AI defaults (developers)
+
+AI prompt text and request parameters are kept outside the TypeScript source:
+
+- `config/ai-prompts.json` — B improvement, full translation, and contextual translation instructions.
+- `config/ai-parameters.json` — A transcription temperature, B generation parameters, and translation parameters. Contextual translation uses the same parameter set as full translation.
+
+Edit the JSON values, then rebuild and reinstall the app for the changes to take effect. The app validates these files at startup: A temperature must be 0–1; text-model temperature 0–2; `top_p` greater than 0 and up to 1; `max_tokens` 64–4096; optional `seed` 0–2147483647. The model lists and validation rules remain in the app source.
+
 ## AI workflow
 
 1. **Record and save audio.** Recording is a local Android operation. No audio is sent until the user starts transcription.
@@ -57,6 +66,7 @@ artifacts/mobile-app/
 │   └── key-connection.tsx   OpenRouter key connection
 ├── assets/                 App images and fonts
 ├── components/             Shared UI, recorder, audio player, text selection
+├── config/                 Editable AI prompts and request-parameter defaults
 ├── constants/              App-wide constants, including the app name
 ├── core/                   Domain logic, data models, persistence, AI client,
 │                           audio files, and SM-2 learning operations
@@ -146,6 +156,15 @@ Smart Lang Tutor — Android-приложение, которое превращ
 - Хранение собственного ключа OpenRouter в защищённом хранилище Android. В приложении нет регистрации, входа и собственного backend.
 
 Пользователь может выбирать модели, но **не может редактировать промпты ИИ или параметры генерации в приложении**. Для MVP эти значения заданы внутри приложения. Восстановление настроек по умолчанию сбрасывает выбор моделей и внутренние AI-настройки, но не удаляет словарь, материалы, прогресс или сохранённый ключ.
+
+### Настройка AI-параметров разработчиком
+
+Тексты промптов и значения параметров запросов вынесены из TypeScript-кода:
+
+- `config/ai-prompts.json` — инструкции для улучшения Б, полного перевода и контекстного перевода.
+- `config/ai-parameters.json` — температура транскрибации А, параметры генерации Б и параметры перевода. Контекстный перевод использует тот же набор параметров, что и полный перевод.
+
+Измените значения в JSON, затем пересоберите и переустановите приложение. При запуске приложение проверяет файлы: температура А — 0–1; температура текстовой модели — 0–2; `top_p` — больше 0 и не выше 1; `max_tokens` — 64–4096; необязательный `seed` — 0–2147483647. Списки моделей и правила проверки остаются в исходном коде.
 
 ## Как работают ИИ-операции
 
