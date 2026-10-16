@@ -250,3 +250,11 @@ def test_web_disclosure_keeps_expanded_actions_in_react_native_layout():
     assert "minWidth: 0" in source
     assert "Collapsible" not in source
     assert "Host" not in source
+
+
+@pytest.mark.materials
+def test_settings_screen_omits_setup_eyebrow():
+    source = (APP / "app" / "settings.tsx").read_text(encoding="utf-8")
+
+    assert "<Heading>Settings</Heading>" in source
+    assert "YOUR SETUP" not in source
