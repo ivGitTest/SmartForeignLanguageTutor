@@ -163,6 +163,34 @@ test("A changes mark B and translation stale without removing either", () => {
   assert.equal(bIsStale(m, d.settings), true); assert.equal(translationIsStale(m, d.settings), true);
   assert.equal(m.b, "Previous B."); assert.equal(m.translation, "Предыдущее Б.");
 });
+for (const staleReason of ["A revision", "AI model change"] as const) {
+  test(`saved stale B remains usable after ${staleReason} without regenerating B`, async () => {
+    const d = materialData(), material = d.materials[0];
+    if (staleReason === "A revision") material.aRevision++;
+    else d.settings.bModel = "google/gemini-2.5-flash";
+    assert.equal(bIsStale(material, d.settings), true);
+    const { repo } = memory(d); await repo.hydrate();
+    let chatCalls = 0;
+    const actions = createMaterialActions(repo, {
+      async transcribe() { throw new Error("Transcription must not run."); },
+      async chat(_model, _prompt, source, _parameters, _signal, context) {
+        chatCalls++;
+        const selected = JSON.parse(source) as { expression: string; sentence: string };
+        assert.equal(selected.expression, "Previous");
+        assert.equal(selected.sentence, "Previous B.");
+        assert.equal(context?.targetLanguage, "ru");
+        return result("предыдущий");
+      },
+    });
+
+    const translated = await actions.translateExpression("m", "Previous", "Previous B.", "Previous B.", "b");
+
+    assert.equal(translated, "предыдущий");
+    assert.equal(chatCalls, 1);
+    assert.equal(repo.snapshot().materials[0].b, "Previous B.");
+    assert.equal(bIsStale(repo.snapshot().materials[0], repo.snapshot().settings), true);
+  });
+}
 test("B is durable before a failed translation; retry does not generate B", async () => {
   const { repo } = memory(materialData()); await repo.hydrate();
   let calls = 0;

@@ -63,7 +63,7 @@ export default function MaterialScreen() {
     if (!selection || !contextTranslation) return;
     const latest = repo.snapshot();
     const source = latest.materials.find(x => x.id === id);
-    if (!source || source.b !== selection.text || bIsStale(source, latest.settings)) throw new Error("B changed. Select and translate the expression again.");
+    if (!source || source.b !== selection.text) throw new Error("B changed. Select and translate the expression again.");
     const existing = latest.cards.find(c => normalizeExpression(c.expression) === normalizeExpression(selection.expression));
     if (existing && !separate) { setDuplicate(existing.id); return; }
     await repo.update(d => {
@@ -96,8 +96,8 @@ export default function MaterialScreen() {
       <Row><Heading small>B · Improved</Heading><IconButton name="volume-up" label="Listen to B" onPress={() => void task.run(() => speak(m.b, task.setError))} /></Row>
       <Body muted>B2 English · select a word or expression to translate it.</Body>
       {!!m.bModelUsed && <Body muted style={{ fontSize: 11 }}>{m.bModelUsed} · {new Date(m.bCreatedAt).toLocaleString("en-GB")}</Body>}
-      {stale && <Notice>B is out of date after changes to A or its AI settings. Improve A again to create a new B.</Notice>}
-      <SelectableTranscript text={m.b} onSelect={(expression, sentence) => { if (!stale) select(expression, sentence); }} />
+      {stale && <Notice>Saved B was created before A or AI settings changed. It remains available for word selection and the Dictionary. Improve current A again only if you want an updated B.</Notice>}
+      <SelectableTranscript text={m.b} onSelect={(expression, sentence) => select(expression, sentence)} />
       <Disclosure key={`translation-${m.bVersion}`} label={`Translation · Russian · ${m.translation ? "Saved" : m.translationError ? "Error" : "Not created"}`}>
         {m.translation ? <><View style={{ alignSelf: "stretch", minWidth: 0 }}>
           <Body

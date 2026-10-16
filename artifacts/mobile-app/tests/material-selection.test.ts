@@ -49,6 +49,16 @@ test("only B improved exposes text selection for dictionary lookup", () => {
     jsxAttribute(improvedB, "onSelect"),
     "B · Improved must retain its contextual translation and dictionary action.",
   );
+  assert.match(
+    sourceText,
+    /<SelectableTranscript text=\{m\.b\} onSelect=\{\(expression, sentence\) => select\(expression, sentence\)\}/,
+    "Saved B remains selectable even if it is marked out of date.",
+  );
+  assert.doesNotMatch(
+    sourceText,
+    /source\.b !== selection\.text \|\| bIsStale\(source, latest\.settings\)/,
+    "Adding a word from unchanged saved B must not require regenerating B.",
+  );
 });
 
 test("contextual dictionary button stays beside a shrinkable selected expression", () => {

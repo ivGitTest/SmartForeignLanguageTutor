@@ -108,7 +108,7 @@ function translateExpression(id: string, expression: string, sentence: string, e
   return runTracked("context", "Translating selected expression", id, async (signal, guard) => {
     const { m, settings } = current(id);
     const original = m[source];
-    if (!original || original !== expectedText || (source === "b" && bIsStale(m, settings)) || !original.includes(sentence) || !sentence.includes(expression)) throw new Error("Select an expression in the current text.");
+    if (!original || original !== expectedText || !original.includes(sentence) || !sentence.includes(expression)) throw new Error("Select an expression in the current text.");
     if (!expression.trim() || expression.length > 500 || sentence.length > 10000) throw new Error("Select a shorter expression.");
     const result = await chat(settings.bModel, settings.contextPrompt, JSON.stringify({ expression, sentence }), settings.translationParameters, signal, { sourceLanguage: "en", targetLanguage: settings.nativeLanguage });
     guard();
