@@ -95,7 +95,7 @@ Edit the JSON and rebuild the application for changes to take effect. The app va
 │   ├── server/               Static browser-preview server; no AI backend
 │   ├── tests/                TypeScript domain/SQLite tests and pytest UI tests
 │   ├── app.config.ts         Expo app configuration
-│   ├── app_example.json      Example Expo configuration for a fork
+│   ├── app_example.json      Example Expo configuration
 │   ├── eas.json              EAS Android build profiles
 │   └── package.json          App scripts and dependencies
 ├── pnpm-workspace.yaml       Workspace package configuration
@@ -177,7 +177,7 @@ The current profiles do not produce a Google Play upload. Google Play releases r
 
 ### Smart Lang Tutor
 
-Smart Lang Tutor — Android-приложение, которое превращает короткую запись речи на английском в транскрибацию, улучшенный вариант уровня B2, перевод на русский и карточки слов для интервального повторения.
+Smart Lang Tutor — Android-приложение, которое превращает короткую запись речи на английском в транскрибацию, улучшенный вариант на уровнь выше, перевод на русский и карточки слов для интервального повторения.
 
 В приложении три независимых режима: **Словарь**, **Материалы** и **Обучение**. При запуске открывается Словарь. В MVP зафиксированы английский интерфейс и язык обучения, русский язык перевода, улучшение B1 → B2 и светлая тема.
 
@@ -266,7 +266,7 @@ Android-приложение хранит учебные данные в SQLite,
 │   ├── server/               Сервер статического browser preview; не AI backend
 │   ├── tests/                TypeScript-тесты домена/SQLite и pytest UI-тесты
 │   ├── app.config.ts         Конфигурация приложения Expo
-│   ├── app_example.json      Пример конфигурации Expo для форка
+│   ├── app_example.json      Пример конфигурации Expo
 │   ├── eas.json              Профили сборки Android для EAS
 │   └── package.json          Скрипты и зависимости приложения
 ├── package.json              Скрипты корневого workspace
