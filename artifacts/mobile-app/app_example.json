@@ -1,7 +1,7 @@
 {
   "expo": {
-    "slug": "smartlang",
-    "owner": "ivaexpi",
+    "slug": "slug_name",
+    "owner": "owner_name",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -38,7 +38,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "24594e06-57d4-416b-9f3e-5f212b9c2cd5"
+        "projectId": "your_expo_project_id"
       }
     }
   }
