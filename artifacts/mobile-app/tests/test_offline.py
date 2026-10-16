@@ -238,3 +238,15 @@ def test_native_disclosure_keeps_expanded_translation_in_react_native_layout():
     assert "minWidth: 0" in source
     assert "RNHostView" not in source
     assert "onSizeChanged" not in source
+
+
+@pytest.mark.materials
+def test_web_disclosure_keeps_expanded_actions_in_react_native_layout():
+    source = (APP / "components" / "disclosure.tsx").read_text(encoding="utf-8")
+
+    assert "accessibilityState={{ expanded: open }}" in source
+    assert "{open && (" in source
+    assert "width: \"100%\"" in source
+    assert "minWidth: 0" in source
+    assert "Collapsible" not in source
+    assert "Host" not in source
