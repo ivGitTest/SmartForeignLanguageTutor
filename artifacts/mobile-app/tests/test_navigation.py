@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 
@@ -162,7 +163,9 @@ def test_missing_routes_have_a_working_exit(
 
 
 def assert_app_version_is_present(driver) -> None:
-    app_version = json.loads((APP_ROOT / "app.json").read_text(encoding="utf-8"))["expo"]["version"]
+    app_version = os.environ.get("SMART_LANG_TUTOR_APP_VERSION") or json.loads(
+        (APP_ROOT / "app.json").read_text(encoding="utf-8")
+    )["expo"]["version"]
     assert "Version:" in driver.page_source
     assert re.search(rf"{re.escape(app_version)} · (?:Build \d+|Preview)", driver.page_source)
 

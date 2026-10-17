@@ -13,8 +13,8 @@
     "eas:login": "pnpm dlx eas-cli@24.13.0 login --device",
     "eas:whoami": "pnpm dlx eas-cli@24.13.0 whoami",
     "eas:link": "pnpm dlx eas-cli@24.13.0 init",
-    "build:apk": "bash scripts/build-apk.sh",
-    "build:apk:production": "pnpm dlx eas-cli@24.13.0 build --platform android --profile production",
+    "build:apk": "BUILD_PROFILE=preview bash scripts/build-apk.sh",
+    "build:apk:production": "BUILD_PROFILE=production bash scripts/build-apk.sh",
     "build:list": "pnpm dlx eas-cli@24.13.0 build:list --platform android",
     "start:local": "expo start"
   },

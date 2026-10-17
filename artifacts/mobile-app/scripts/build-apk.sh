@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+VERSION="${1:-}"
+BUILD_PROFILE="${BUILD_PROFILE:-preview}"
+
+if [[ $# -ne 1 || ! "$VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+  echo "Provide the app version as x.y (for example, 1.2)." >&2
+  echo "Usage: pnpm --filter @workspace/mobile-app run build:apk -- <version>" >&2
+  echo "       pnpm --filter @workspace/mobile-app run build:apk:production -- <version>" >&2
+  exit 2
+fi
+
+if [[ "$BUILD_PROFILE" != "preview" && "$BUILD_PROFILE" != "production" ]]; then
+  echo "Unsupported Android build profile: $BUILD_PROFILE (expected preview or production)." >&2
+  exit 2
+fi
+
+export APP_VERSION="$VERSION"
+
 EXPECTED_SLUG="smartlang"
 EXPECTED_OWNER="ivaexpi"
 EXPECTED_PROJECT_ID="24594e06-57d4-416b-9f3e-5f212b9c2cd5"
@@ -12,7 +29,7 @@ cd "$APP_DIR"
 
 echo "Checking Expo project configuration..."
 PUBLIC_CONFIG="$(pnpm exec expo config --type public --json)"
-printf '%s\n' "$PUBLIC_CONFIG" | EXPECTED_SLUG="$EXPECTED_SLUG" EXPECTED_OWNER="$EXPECTED_OWNER" EXPECTED_PROJECT_ID="$EXPECTED_PROJECT_ID" node -e '
+printf '%s\n' "$PUBLIC_CONFIG" | EXPECTED_SLUG="$EXPECTED_SLUG" EXPECTED_OWNER="$EXPECTED_OWNER" EXPECTED_PROJECT_ID="$EXPECTED_PROJECT_ID" EXPECTED_VERSION="$APP_VERSION" node -e '
 let input = "";
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", chunk => input += chunk);
@@ -23,11 +40,13 @@ process.stdin.on("end", () => {
       slug: process.env.EXPECTED_SLUG,
       owner: process.env.EXPECTED_OWNER,
       projectId: process.env.EXPECTED_PROJECT_ID,
+      version: process.env.EXPECTED_VERSION,
     };
     const actual = {
       slug: config.slug,
       owner: config.owner,
       projectId: config.extra?.eas?.projectId,
+      version: config.version,
     };
     if (Object.keys(expected).some(key => expected[key] !== actual[key])) {
       console.error("Expo project mismatch.");
@@ -67,5 +86,5 @@ if ! grep -Eq "(^|[^[:alnum:]_-])@?${EXPECTED_OWNER}($|[^[:alnum:]_-])" <<< "$WH
   exit 1
 fi
 
-echo "Starting Android preview APK build on EAS..."
-exec pnpm dlx "eas-cli@$EAS_CLI_VERSION" build --platform android --profile preview
+echo "Starting Android $BUILD_PROFILE APK build on EAS with app version $APP_VERSION..."
+exec pnpm dlx "eas-cli@$EAS_CLI_VERSION" build --platform android --profile "$BUILD_PROFILE"

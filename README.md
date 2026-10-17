@@ -145,6 +145,7 @@ pnpm --filter @workspace/mobile-app run test
 ```
 
 Офлайн-проверки доменной логики запускаются без Android-устройства и не отправляют запросы ИИ. UI-тесты Android запускаются только при наличии APK и настроенного эмулятора или устройства; используйте чистую тестовую установку.
+Для APK с пользовательской версией передайте её UI-тестам через `SMART_LANG_TUTOR_APP_VERSION`, например `SMART_LANG_TUTOR_APP_VERSION=1.1`.
 
 ### Сборка и распространение Android-приложения
 
@@ -155,25 +156,25 @@ pnpm install --frozen-lockfile
 pnpm --filter @workspace/mobile-app run eas:login
 ```
 
-Для поддерживаемого проекта соберите preview APK:
+Перед каждой сборкой задайте версию приложения в формате `x.y` (две числовые части, например `1.1`). Она попадёт в APK и будет показана на экране Settings. Внутренний Android `versionCode` EAS ведёт отдельно и увеличивает автоматически.
 
 ```sh
-pnpm --filter @workspace/mobile-app run build:apk
+pnpm --filter @workspace/mobile-app run build:apk -- 1.1
 ```
 
-Скрипт проверяет, что используется исходный EAS-проект. Для форка создайте или выберите собственный EAS-проект, обновите владельца и ID проекта Expo, slug и уникальный Android application ID, затем войдите в свой аккаунт и свяжите проект. Поскольку вспомогательный скрипт привязан к исходному проекту, запускайте EAS CLI напрямую из `artifacts/mobile-app`:
+Скрипт проверяет, что используется исходный EAS-проект. Для форка создайте или выберите собственный EAS-проект, обновите владельца и ID проекта Expo, slug и уникальный Android application ID, затем войдите в свой аккаунт и свяжите проект. Поскольку вспомогательный скрипт привязан к исходному проекту, запускайте EAS CLI напрямую из `artifacts/mobile-app` и передавайте версию через `APP_VERSION`:
 
 ```sh
 cd artifacts/mobile-app
 pnpm dlx eas-cli@24.13.0 login
 pnpm dlx eas-cli@24.13.0 init
-pnpm dlx eas-cli@24.13.0 build --platform android --profile preview
+APP_VERSION=1.1 pnpm dlx eas-cli@24.13.0 build --platform android --profile preview
 ```
 
 После завершения сборки скачайте APK со страницы сборки EAS и установите его на Android-устройство. Профиль `production` сейчас также создаёт APK для внутреннего или прямого распространения:
 
 ```sh
-pnpm --filter @workspace/mobile-app run build:apk:production
+pnpm --filter @workspace/mobile-app run build:apk:production -- 1.1
 ```
 
 # English
@@ -315,6 +316,7 @@ pnpm --filter @workspace/mobile-app run test
 ```
 
 The offline/domain checks run without an Android device and do not send AI requests. Android UI tests run only when an APK and a suitable emulator/device are configured; use a clean test installation.
+For an APK with a custom version, pass it to the UI tests with `SMART_LANG_TUTOR_APP_VERSION`, for example `SMART_LANG_TUTOR_APP_VERSION=1.1`.
 
 ### Build and distribute the Android app
 
@@ -325,25 +327,25 @@ pnpm install --frozen-lockfile
 pnpm --filter @workspace/mobile-app run eas:login
 ```
 
-For the maintained project, build a preview APK:
+Set the app version as `x.y` (two numeric parts, such as `1.1`) for each build. It is included in the APK and shown on the Settings screen. EAS manages and automatically increments Android's internal `versionCode` separately.
 
 ```sh
-pnpm --filter @workspace/mobile-app run build:apk
+pnpm --filter @workspace/mobile-app run build:apk -- 1.1
 ```
 
-The helper checks that the current Expo project matches the original EAS project. To build a fork, create or select an EAS project, update the fork's Expo owner/project ID, slug, and unique Android application ID, then sign in and link the project. Run the EAS CLI directly from `artifacts/mobile-app` because the helper is intentionally tied to the maintained project:
+The helper checks that the current Expo project matches the original EAS project. To build a fork, create or select an EAS project, update the fork's Expo owner/project ID, slug, and unique Android application ID, then sign in and link the project. Run the EAS CLI directly from `artifacts/mobile-app` because the helper is intentionally tied to the maintained project; pass the version with `APP_VERSION`:
 
 ```sh
 cd artifacts/mobile-app
 pnpm dlx eas-cli@24.13.0 login
 pnpm dlx eas-cli@24.13.0 init
-pnpm dlx eas-cli@24.13.0 build --platform android --profile preview
+APP_VERSION=1.1 pnpm dlx eas-cli@24.13.0 build --platform android --profile preview
 ```
 
 When EAS reports the build is complete, download the APK from the EAS build page and install it on an Android device. The `production` profile also currently creates an APK for internal/direct distribution:
 
 ```sh
-pnpm --filter @workspace/mobile-app run build:apk:production
+pnpm --filter @workspace/mobile-app run build:apk:production -- 1.1
 ```
 
 The current profiles do not produce a Google Play upload. Google Play releases require an Android App Bundle (`.aab`), Play Console setup, signing credentials, and a store listing. Configure the production profile to build an app bundle, then follow [Expo's Google Play submission guide](https://docs.expo.dev/submit/android/) to set up submission. After configuring Play credentials and the EAS submit profile, submit with `pnpm dlx eas-cli@24.13.0 submit --platform android --profile production` from `artifacts/mobile-app`. See also [EAS Build](https://docs.expo.dev/build/introduction/) and [building APKs](https://docs.expo.dev/build-reference/apk/).
