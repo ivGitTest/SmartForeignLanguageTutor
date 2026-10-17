@@ -152,8 +152,34 @@ def test_learning_queue_reveal_ratings_resume_and_due_schedule():
 
 
 def test_settings_validation_and_sqlite_transactions():
-    run_typescript(APP / "tests" / "domain.test.ts", "defaults|invalid ranges|fixed AI configuration")
+    run_typescript(APP / "tests" / "domain.test.ts", "defaults|invalid ranges|fixed AI configuration|CEFR")
     run_typescript(APP / "tests" / "sqlite.test.ts")
+
+
+def test_cefr_target_picker_and_material_labels_follow_saved_settings():
+    settings = (APP / "app" / "settings.tsx").read_text(encoding="utf-8")
+    material = (APP / "app" / "material" / "[id].tsx").read_text(encoding="utf-8")
+    assert "<Label>Target</Label>" in settings
+    assert 'testID="cefr-pair-picker"' in settings
+    assert "selectedValue={data.settings.cefrPair}" in settings
+    assert "cefrPairSchema.parse(value)" in settings
+    assert "await repo.update(d => { d.settings.cefrPair = pair; });" in settings
+    assert "CEFR_PAIRS.map(pair => <Picker.Item" in settings
+    assert "label={cefrPairLabel(pair)} value={pair}" in settings
+    assert '["Target", "B1 → B2"]' not in settings
+    assert "d.settings = { ...defaults(), consent: d.settings.consent }" in settings
+    assert "cefrLevels(data.settings.cefrPair)" in material
+    assert "Improve to ${targetCEFR}" in material
+    assert "cefrLevels(m.bCEFRPair).targetCEFR" in material
+
+
+def test_transcription_request_does_not_apply_cefr_or_improvement_prompt():
+    source = (APP / "core" / "openrouter.ts").read_text(encoding="utf-8")
+    transcription = source.split("export async function transcribe(", 1)[1].split("function safeCost", 1)[0]
+    assert 'language: "en"' in transcription
+    assert '"/api/v1/audio/transcriptions"' in transcription
+    assert "cefr" not in transcription.lower()
+    assert "prompt" not in re.sub(r"//[^\n]*", "", transcription).lower()
 
 
 def test_ai_prompt_and_parameter_form_is_disabled_but_preserved_in_comments():

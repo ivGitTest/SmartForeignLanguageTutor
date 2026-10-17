@@ -1,6 +1,6 @@
 import type { Repository } from "./repository";
 import { operations as sharedOperations } from "./operations";
-import { bFingerprint, bIsStale, fixedAISettings, translationFingerprint, id as newId, type Settings, type Material } from "./model";
+import { bFingerprint, bIsStale, cefrLevels, improvementPrompt, fixedAISettings, translationFingerprint, id as newId, type Settings, type Material } from "./model";
 type Client = Pick<typeof import("./openrouter"), "chat" | "transcribe">;
 /** Injected boundaries make the complete AI chain testable without native modules or paid requests. */
 export function createMaterialActions(repository: Repository, client: Client, operations = sharedOperations) {
@@ -80,13 +80,14 @@ function generateB(id: string) {
   return runTracked("b", "Improving B · then translating", id, async (signal, guard) => {
     const { m, settings } = current(id);
     if (!m.a.trim()) throw new Error("Create or edit A first.");
-    const result = await chat(settings.bModel, settings.bPrompt, m.a, settings.bParameters, signal, { sourceLanguage: settings.learningLanguage, sourceCEFR: "B1", targetCEFR: "B2", artifact: "A" });
+    const result = await chat(settings.bModel, improvementPrompt(settings), m.a, settings.bParameters, signal, { sourceLanguage: settings.learningLanguage, ...cefrLevels(settings.cefrPair), artifact: "A" });
     await repository.update(d => {
       const latest = check(d, id, m.aRevision, guard);
       if (result.cost !== null) { latest.cost += result.cost; latest.costKnown = true; }
       if (!result.complete) { latest.incomplete = result.text; return; }
       latest.b = result.text; latest.bARevision = m.aRevision; latest.bFingerprint = bFingerprint(settings);
       latest.bSourceA = m.a;
+      latest.bCEFRPair = settings.cefrPair;
       latest.bVersion++;
       latest.bModelUsed = settings.bModel; latest.bCreatedAt = Date.now();
       if (latest.pendingAI) latest.pendingAI.stage = "translation";

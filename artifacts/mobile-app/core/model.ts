@@ -4,6 +4,15 @@ import aiParametersFile from "../config/ai-parameters.json";
 
 export const A_MODELS = ["openai/whisper-large-v3", "openai/whisper-large-v3-turbo", "openai/gpt-4o-mini-transcribe"] as const;
 export const B_MODELS = ["openai/gpt-4.1-mini", "google/gemini-2.5-flash", "openai/gpt-4.1"] as const;
+export const CEFR_PAIRS = ["A2-B1", "A2-B2", "A2-C1", "B1-B2", "B1-C1", "B1-C2"] as const;
+export const cefrPairSchema = z.enum(CEFR_PAIRS);
+export type CEFRPair = z.infer<typeof cefrPairSchema>;
+export const DEFAULT_CEFR_PAIR: CEFRPair = "B1-B2";
+export function cefrLevels(pair: CEFRPair) {
+  const [sourceCEFR, targetCEFR] = pair.split("-");
+  return { sourceCEFR, targetCEFR };
+}
+export const cefrPairLabel = (pair: CEFRPair) => pair.replace("-", " → ");
 
 const text = z.string().max(10000);
 const prompt = z.string().trim().min(1).max(20000);
@@ -26,6 +35,7 @@ const aiParameters = z.object({
 export const settingsSchema = z.object({
   interfaceLanguage: z.literal("en").default("en"), nativeLanguage: z.literal("ru").default("ru"), learningLanguage: z.literal("en").default("en"),
   aModel: z.enum(A_MODELS), bModel: z.enum(B_MODELS),
+  cefrPair: cefrPairSchema.default(DEFAULT_CEFR_PAIR),
   aTemperature: z.number().min(0).max(1),
   bPrompt: prompt, translationPrompt: prompt, contextPrompt: prompt,
   bParameters: parametersSchema, translationParameters: parametersSchema,
@@ -36,6 +46,7 @@ export type Parameters = z.infer<typeof parametersSchema>;
 export function defaults(): Settings {
   return {
     interfaceLanguage: "en", nativeLanguage: "ru", learningLanguage: "en",
+    cefrPair: DEFAULT_CEFR_PAIR,
     aModel: A_MODELS[0], bModel: B_MODELS[0], aTemperature: aiParameters.a.temperature,
     bPrompt: aiPrompts.b, translationPrompt: aiPrompts.translation, contextPrompt: aiPrompts.context,
     bParameters: { ...aiParameters.b },
@@ -43,7 +54,7 @@ export function defaults(): Settings {
     consent: false,
   };
 }
-/** AI tuning is fixed in the MVP; preserve the user's model/language choices only. */
+/** AI tuning is built in; preserve the user's model, language and CEFR choices. */
 export function fixedAISettings(settings: Settings): Settings {
   const fixed = defaults();
   return {
@@ -55,6 +66,10 @@ export function fixedAISettings(settings: Settings): Settings {
     bParameters: fixed.bParameters,
     translationParameters: fixed.translationParameters,
   };
+}
+export function improvementPrompt(settings: Settings) {
+  const levels = cefrLevels(settings.cefrPair);
+  return aiPrompts.b.replaceAll("{sourceCEFR}", levels.sourceCEFR).replaceAll("{targetCEFR}", levels.targetCEFR);
 }
 const date = z.number().finite().nonnegative();
 const cardSchema = z.object({
@@ -72,6 +87,7 @@ const materialSchema = z.object({
   b: text, bARevision: z.number().int().nonnegative(), bFingerprint: z.string(),
   bVersion: z.number().int().nonnegative().default(0),
   bModelUsed: z.string().default(""), bCreatedAt: date.default(0),
+  bCEFRPair: cefrPairSchema.default(DEFAULT_CEFR_PAIR),
   aModelUsed: z.string().default(""), aCreatedAt: date.default(0), aTemperatureUsed: z.number().min(0).max(1).default(0),
   bSourceA: text.default(""),
   translation: text, translationFingerprint: z.string(),
@@ -115,7 +131,9 @@ export function initialData(): AppData {
 }
 export const bFingerprint = (s: Settings) => {
   const fixed = fixedAISettings(s);
-  return JSON.stringify([fixed.bModel, fixed.bPrompt, fixed.bParameters]);
+  // The rendered instruction includes both levels. Keep the original three-field
+  // format so unchanged B1 → B2 results remain current after an app upgrade.
+  return JSON.stringify([fixed.bModel, improvementPrompt(fixed), fixed.bParameters]);
 };
 export const translationFingerprint = (s: Settings) => {
   const fixed = fixedAISettings(s);

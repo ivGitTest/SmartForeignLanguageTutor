@@ -24,7 +24,7 @@ export default function Materials() {
       if (!d.pendingAudio) throw new Error("No recording is awaiting save.");
       const { createdAt, ...audio } = d.pendingAudio;
       const m: Material = { id: materialId, createdAt, title: formatRecordingTitle(createdAt, audio.duration), audio,
-        a: "", aRevision: 0, aEdited: false, b: "", bARevision: 0, bFingerprint: "", bVersion: 0, bModelUsed: "", bCreatedAt: 0,
+        a: "", aRevision: 0, aEdited: false, b: "", bARevision: 0, bFingerprint: "", bVersion: 0, bModelUsed: "", bCreatedAt: 0, bCEFRPair: d.settings.cefrPair,
         translation: "", translationFingerprint: "", translationLanguage: "ru", translationError: "", incomplete: "", cost: 0, costKnown: false, pendingAI: null, lastAIError: "",
         aModelUsed: "", aCreatedAt: 0, aTemperatureUsed: 0, bSourceA: "", translationBVersion: 0, translationCreatedAt: 0 };
       d.materials.push(m); d.pendingAudio = null; d.lastMaterialId = materialId;

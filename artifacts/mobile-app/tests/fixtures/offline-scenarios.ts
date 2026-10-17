@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { Repository } from "../../core/repository";
-import { initialData, dataSchema } from "../../core/model";
+import { initialData, dataSchema, CEFR_PAIRS, cefrLevels, bIsStale, translationIsStale } from "../../core/model";
 import { createMaterialActions } from "../../core/material-actions";
 import { startSession } from "../../core/learning";
 import { sentenceForSelection } from "../../core/selection";
@@ -48,8 +48,11 @@ test("dictionary sample cards and material list survive a repository reload", as
   assert.equal(reopened.snapshot().session!.revealed, true);
 });
 
-test("materials successful A B translation and contextual lookup use only supplied responses", async () => {
+for (const cefrPair of CEFR_PAIRS) {
+test(`materials CEFR ${cefrPair}: successful A B translation and contextual lookup use only supplied responses`, async () => {
   const { repo, storage } = await populated();
+  await repo.update(d => { d.settings.cefrPair = cefrPair; });
+  const { sourceCEFR, targetCEFR } = cefrLevels(cefrPair);
   const sample = samples.materials[0];
   const calls: string[] = [];
   const actions = createMaterialActions(repo, {
@@ -58,10 +61,13 @@ test("materials successful A B translation and contextual lookup use only suppli
       calls.push("A");
       return { text: sample.a, cost: null };
     },
-    async chat(_model, _prompt, source, _parameters, _signal, context) {
+    async chat(_model, prompt, source, _parameters, _signal, context) {
       if (context?.artifact === "A") {
         assert.equal(source, sample.a);
-        assert.equal(context.targetCEFR, "B2");
+        assert.equal(context.sourceCEFR, sourceCEFR);
+        assert.equal(context.targetCEFR, targetCEFR);
+        assert.ok(prompt.includes(`с исходного уровня ${sourceCEFR} до уровня ${targetCEFR}`));
+        assert.ok(prompt.includes(`речь уровня ${targetCEFR}`));
         calls.push("B");
         return { text: sample.b, complete: true, cost: null };
       }
@@ -83,6 +89,9 @@ test("materials successful A B translation and contextual lookup use only suppli
   assert.equal(m.a, sample.a);
   assert.equal(m.b, sample.b);
   assert.equal(m.translation, sample.translation);
+  assert.equal(m.bCEFRPair, cefrPair);
+  assert.equal(bIsStale(m, repo.snapshot().settings), false);
+  assert.equal(translationIsStale(m, repo.snapshot().settings), false);
   assert.deepEqual(calls, ["A", "B", "translation"]);
   const start = sample.b.indexOf(sample.expression);
   const selection = sentenceForSelection(sample.b, start, start + sample.expression.length)!;
@@ -91,4 +100,6 @@ test("materials successful A B translation and contextual lookup use only suppli
   const reopened = new Repository(storage);
   await reopened.hydrate();
   assert.deepEqual(reopened.snapshot().materials, repo.snapshot().materials);
+  assert.equal(reopened.snapshot().settings.cefrPair, cefrPair);
 });
+}

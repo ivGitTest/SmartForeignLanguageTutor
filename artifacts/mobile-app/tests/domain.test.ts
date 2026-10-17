@@ -2,9 +2,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Repository, type Persistence } from "../core/repository";
-import { initialData, dataSchema, defaults, fixedAISettings, settingsSchema, bFingerprint, translationFingerprint, bIsStale, translationIsStale, normalizeExpression, type AppData, type Card } from "../core/model";
+import { initialData, dataSchema, defaults, fixedAISettings, settingsSchema, CEFR_PAIRS, cefrPairLabel, improvementPrompt, bFingerprint, translationFingerprint, bIsStale, translationIsStale, normalizeExpression, type AppData, type Card } from "../core/model";
 import aiPrompts from "../config/ai-prompts.json";
 import aiParameters from "../config/ai-parameters.json";
+import legacyBFingerprint from "./fixtures/legacy-b-fingerprint.json";
 import { eligible, rate, skipDeleted, startSession } from "../core/learning";
 import { sentenceForSelection, transcriptDocument } from "../core/selection";
 import { operations } from "../core/operations";
@@ -83,6 +84,188 @@ test("invalid ranges and empty/oversize prompts are rejected", () => {
     assert.equal(settingsSchema.safeParse({ ...s, bParameters: { ...s.bParameters, ...p } }).success, false);
   }
   for (const bPrompt of [" ", "x".repeat(20001)]) assert.equal(settingsSchema.safeParse({ ...s, bPrompt }).success, false);
+});
+test("CEFR choices are exactly the six supported pairs; default is B1 to B2", () => {
+  assert.deepEqual(CEFR_PAIRS, ["A2-B1", "A2-B2", "A2-C1", "B1-B2", "B1-C1", "B1-C2"]);
+  assert.equal(defaults().cefrPair, "B1-B2");
+  assert.match(improvementPrompt(defaults()), /с исходного уровня B1 до уровня B2/);
+  assert.match(improvementPrompt(defaults()), /речь уровня B2/);
+  for (const cefrPair of ["A1-B1", "A2-C2", "B1-B1", "B2-C1", "", null]) {
+    assert.equal(settingsSchema.safeParse({ ...defaults(), cefrPair }).success, false);
+  }
+});
+test("CEFR missing in legacy storage defaults without changing saved A", async () => {
+  const legacy = JSON.parse(JSON.stringify(materialData()));
+  delete legacy.settings.cefrPair;
+  delete legacy.materials[0].bCEFRPair;
+  legacy.materials[0].bFingerprint = JSON.stringify(legacyBFingerprint);
+  const repo = new Repository({ async read() { return JSON.stringify(legacy); }, async write() {} });
+  await repo.hydrate();
+  assert.equal(repo.snapshot().settings.cefrPair, "B1-B2");
+  assert.equal(repo.snapshot().materials[0].bCEFRPair, "B1-B2");
+  const { bCEFRPair, ...material } = repo.snapshot().materials[0];
+  assert.deepEqual(material, legacy.materials[0]);
+  assert.equal(bIsStale(repo.snapshot().materials[0], repo.snapshot().settings), false);
+  assert.equal(translationIsStale(repo.snapshot().materials[0], repo.snapshot().settings), false);
+});
+test("CEFR legacy B1 to B2 supports translation retry without regenerating B", async () => {
+  const legacy = JSON.parse(JSON.stringify(materialData()));
+  delete legacy.settings.cefrPair;
+  delete legacy.materials[0].bCEFRPair;
+  legacy.materials[0].bFingerprint = JSON.stringify(legacyBFingerprint);
+  legacy.materials[0].translation = "";
+  legacy.materials[0].translationError = "Previous translation failed.";
+  let saved = JSON.stringify(legacy);
+  const persistence = { async read() { return saved; }, async write(value: string) { saved = value; } };
+  const repo = new Repository(persistence); await repo.hydrate();
+  let calls = 0;
+  const actions = createMaterialActions(repo, {
+    async transcribe() { throw new Error("A must not run."); },
+    async chat(_model, _prompt, source, _parameters, _signal, context) {
+      calls++;
+      assert.equal(context?.artifact, "B", "Only translation should be requested.");
+      assert.equal(source, legacy.materials[0].b);
+      return result("Успешный перевод.");
+    },
+  });
+  await actions.retryTranslation("m");
+  assert.equal(calls, 1);
+  const m = repo.snapshot().materials[0];
+  assert.equal(m.a, legacy.materials[0].a);
+  assert.equal(m.b, legacy.materials[0].b);
+  assert.equal(m.bVersion, legacy.materials[0].bVersion);
+  assert.equal(m.translation, "Успешный перевод.");
+  assert.equal(m.translationError, "");
+  assert.equal(translationIsStale(m, repo.snapshot().settings), false);
+  const reopened = new Repository(persistence); await reopened.hydrate();
+  assert.equal(bIsStale(reopened.snapshot().materials[0], reopened.snapshot().settings), false);
+  for (const pair of CEFR_PAIRS.filter(pair => pair !== "B1-B2")) {
+    await repo.update(d => { d.settings.cefrPair = pair; });
+    assert.equal(bIsStale(repo.snapshot().materials[0], repo.snapshot().settings), true);
+    assert.equal(translationIsStale(repo.snapshot().materials[0], repo.snapshot().settings), true);
+    await assert.rejects(actions.retryTranslation("m"), /up-to-date B/);
+  }
+  assert.equal(calls, 1);
+});
+test("CEFR legacy compatibility does not make genuinely stale B or translation current", async () => {
+  const original = JSON.stringify(legacyBFingerprint);
+  const variants = [
+    { fingerprint: original, revision: 0 },
+    { fingerprint: JSON.stringify(["openai/gpt-4.1", legacyBFingerprint[1], legacyBFingerprint[2]]), revision: 1 },
+    { fingerprint: JSON.stringify([legacyBFingerprint[0], "Earlier different prompt", legacyBFingerprint[2]]), revision: 1 },
+    { fingerprint: JSON.stringify([legacyBFingerprint[0], legacyBFingerprint[1], { temperature: 0.7, top_p: 1, max_tokens: 2048 }]), revision: 1 },
+    { fingerprint: "unknown old fingerprint", revision: 1 },
+  ];
+  for (const { fingerprint, revision } of variants) {
+    const d = materialData();
+    d.materials[0].bFingerprint = fingerprint;
+    d.materials[0].bARevision = revision;
+    const { repo } = memory(d); await repo.hydrate();
+    assert.equal(bIsStale(repo.snapshot().materials[0], repo.snapshot().settings), true);
+    assert.equal(translationIsStale(repo.snapshot().materials[0], repo.snapshot().settings), true);
+    const actions = createMaterialActions(repo, {
+      async transcribe() { throw new Error("A must not run."); },
+      async chat() { throw new Error("No paid request should run for stale B."); },
+    });
+    await assert.rejects(actions.retryTranslation("m"), /up-to-date B/);
+  }
+});
+for (const cefrPair of CEFR_PAIRS) {
+  test(`CEFR ${cefrPair} persists, reloads and restores defaults without changing materials`, async () => {
+    const { repo, persistence } = memory(materialData()); await repo.hydrate();
+    const before = structuredClone(repo.snapshot().materials);
+    await repo.update(d => { d.settings.cefrPair = cefrPair; });
+    const reopened = new Repository(persistence); await reopened.hydrate();
+    assert.equal(reopened.snapshot().settings.cefrPair, cefrPair);
+    assert.equal(fixedAISettings(reopened.snapshot().settings).cefrPair, cefrPair);
+    assert.equal(cefrPairLabel(cefrPair), cefrPair.replace("-", " → "));
+    await reopened.update(d => { d.settings = { ...defaults(), consent: d.settings.consent }; });
+    const reset = new Repository(persistence); await reset.hydrate();
+    assert.equal(reset.snapshot().settings.cefrPair, "B1-B2");
+    assert.equal(reset.snapshot().settings.consent, true);
+    assert.deepEqual(reset.snapshot().materials, before);
+  });
+  test(`CEFR ${cefrPair} uses matching prompt and context for B; A is independent`, async () => {
+    const d = materialData();
+    d.settings.cefrPair = cefrPair;
+    const { repo, persistence } = memory(d); await repo.hydrate();
+    const [sourceCEFR, targetCEFR] = cefrPair.split("-");
+    let transcriptions = 0, chats = 0;
+    const actions = createMaterialActions(repo, {
+      async transcribe(uri, settings) {
+        transcriptions++;
+        assert.equal(uri, "test-private.m4a");
+        assert.equal(settings.aModel, defaults().aModel);
+        assert.equal(settings.aTemperature, defaults().aTemperature);
+        assert.equal(settings.learningLanguage, "en");
+        return { text: "I am not sure.", cost: null };
+      },
+      async chat(_model, prompt, source, _parameters, _signal, context) {
+        chats++;
+        if (context?.artifact === "A") {
+          assert.equal(source, "I am not sure.");
+          assert.equal(context.sourceLanguage, "en");
+          assert.equal(context.sourceCEFR, sourceCEFR);
+          assert.equal(context.targetCEFR, targetCEFR);
+          assert.ok(prompt.includes(`с исходного уровня ${sourceCEFR} до уровня ${targetCEFR}`));
+          assert.ok(prompt.includes(`речь уровня ${targetCEFR}`));
+          assert.doesNotMatch(prompt, /\{(?:source|target)CEFR\}/);
+          assert.deepEqual([...new Set(prompt.match(/\b(?:A2|B1|B2|C1|C2)\b/g))], [...new Set([sourceCEFR, targetCEFR])]);
+          return result("Improved English.");
+        }
+        assert.equal(context?.artifact, "B");
+        assert.equal(context?.targetLanguage, "ru");
+        assert.equal(source, "Improved English.");
+        return result("Улучшенный английский.");
+      },
+    });
+    await actions.generateA("m");
+    assert.equal(transcriptions, 1);
+    assert.equal(chats, 0);
+    assert.equal(repo.snapshot().materials[0].a, "I am not sure.");
+    await actions.generateB("m");
+    const m = repo.snapshot().materials[0];
+    assert.equal(chats, 2);
+    assert.equal(m.a, "I am not sure.");
+    assert.equal(m.bSourceA, m.a);
+    assert.equal(m.bCEFRPair, cefrPair);
+    assert.equal(bIsStale(m, repo.snapshot().settings), false);
+    assert.equal(translationIsStale(m, repo.snapshot().settings), false);
+    const reopened = new Repository(persistence); await reopened.hydrate();
+    assert.equal(reopened.snapshot().materials[0].bCEFRPair, cefrPair);
+    for (const other of CEFR_PAIRS.filter(pair => pair !== cefrPair)) {
+      await repo.update(d => { d.settings.cefrPair = other; });
+      assert.equal(bIsStale(m, repo.snapshot().settings), true);
+      assert.equal(translationIsStale(m, repo.snapshot().settings), true);
+      assert.equal(repo.snapshot().materials[0].a, "I am not sure.");
+      assert.equal(repo.snapshot().materials[0].b, "Improved English.");
+      assert.equal(repo.snapshot().materials[0].translation, "Улучшенный английский.");
+      await assert.rejects(actions.retryTranslation("m"), /up-to-date B/);
+    }
+    await repo.update(d => { d.settings.cefrPair = cefrPair; });
+    assert.equal(bIsStale(m, repo.snapshot().settings), false);
+    assert.equal(translationIsStale(m, repo.snapshot().settings), false);
+  });
+}
+test("CEFR changed during B request leaves results tagged with the requested pair and stale", async () => {
+  const { repo } = memory(materialData()); await repo.hydrate();
+  let calls = 0;
+  const actions = createMaterialActions(repo, {
+    async transcribe() { throw new Error("A must not run."); },
+    async chat(_model, prompt, _source, _parameters, _signal, context) {
+      if (++calls === 1) {
+        assert.equal(context?.targetCEFR, "B2");
+        assert.match(prompt, /до уровня B2/);
+        await repo.update(d => { d.settings.cefrPair = "B1-C2"; });
+      }
+      return result(calls === 1 ? "B2 result." : "Перевод B2.");
+    },
+  });
+  await actions.generateB("m");
+  const m = repo.snapshot().materials[0];
+  assert.equal(m.bCEFRPair, "B1-B2");
+  assert.equal(bIsStale(m, repo.snapshot().settings), true);
+  assert.equal(translationIsStale(m, repo.snapshot().settings), true);
 });
 test("repository serializes concurrent durable mutations", async () => {
   const { repo, saved } = memory(); await repo.hydrate();
@@ -171,11 +354,12 @@ test("A changes mark B and translation stale without removing either", () => {
   assert.equal(bIsStale(m, d.settings), true); assert.equal(translationIsStale(m, d.settings), true);
   assert.equal(m.b, "Previous B."); assert.equal(m.translation, "Предыдущее Б.");
 });
-for (const staleReason of ["A revision", "AI model change"] as const) {
+for (const staleReason of ["A revision", "AI model change", "CEFR pair change"] as const) {
   test(`saved stale B remains usable after ${staleReason} without regenerating B`, async () => {
     const d = materialData(), material = d.materials[0];
     if (staleReason === "A revision") material.aRevision++;
-    else d.settings.bModel = "google/gemini-2.5-flash";
+    else if (staleReason === "AI model change") d.settings.bModel = "google/gemini-2.5-flash";
+    else d.settings.cefrPair = "A2-C1";
     assert.equal(bIsStale(material, d.settings), true);
     const { repo } = memory(d); await repo.hydrate();
     let chatCalls = 0;
@@ -256,7 +440,7 @@ test("chain uses fixed prompts and parameters, and ignores saved prompt edits", 
     return result(seen.length === 1 ? "New B." : "Перевод.");
   } });
   await actions.generateB("m");
-  assert.equal(seen[0].prompt, defaults().bPrompt); assert.equal(seen[0].target, "B2");
+  assert.equal(seen[0].prompt, improvementPrompt(defaults())); assert.equal(seen[0].target, "B2");
   assert.equal(seen[0].temperature, defaults().bParameters.temperature);
   assert.equal(seen[1].prompt, defaults().translationPrompt);
   assert.equal(seen[1].temperature, defaults().translationParameters.temperature);

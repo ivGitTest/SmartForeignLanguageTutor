@@ -4,7 +4,7 @@ import { router, useFocusEffect } from "expo-router";
 import { Host, Picker } from "@expo/ui";
 import { Body, Button, Card, Heading, Label, Notice, Row, Screen, useTask } from "@/components/ui";
 import { useApp } from "@/core/app-store";
-import { A_MODELS, B_MODELS, defaults } from "@/core/model";
+import { A_MODELS, B_MODELS, CEFR_PAIRS, cefrPairSchema, cefrPairLabel, defaults } from "@/core/model";
 import { keyStorage } from "@/core/key";
 import { operations } from "@/core/operations";
 import { getCatalog, modelPrice, type Catalog } from "@/core/openrouter";
@@ -98,16 +98,28 @@ export default function SettingsScreen() {
         const result = await getCatalog(new AbortController().signal, true); setCatalog(result); setCatalogError("");
       })} />
     </View>
+    <Card>
+      <Label>Target</Label>
+      <Host matchContents={{ vertical: true }} colorScheme="light" seedColor={c.primary}>
+        <Picker testID="cefr-pair-picker" selectedValue={data.settings.cefrPair} enabled={!task.pending} onValueChange={value => void task.run(async () => {
+          const pair = cefrPairSchema.parse(value);
+          await repo.update(d => { d.settings.cefrPair = pair; });
+        })}>
+          {CEFR_PAIRS.map(pair => <Picker.Item key={pair} label={cefrPairLabel(pair)} value={pair} />)}
+        </Picker>
+      </Host>
+      <Body muted style={{ fontSize: 12 }}>Current → target CEFR for improving B. A remains an English speech transcript.</Body>
+    </Card>
     <View style={{ gap: 9 }}>
       <Body accessibilityRole="header" style={{ fontFamily: "DMSans_700Bold", fontSize: 17 }}>Fixed for this MVP</Body>
       <Card>
-        {[["Interface", "English"], ["Learning", "English"], ["Native / translation", "Russian"], ["Target", "B1 → B2"], ["Session queue", "Up to 10 cards"], ["Theme", "Light"]].map(([label, value]) =>
+        {[["Interface", "English"], ["Learning", "English"], ["Native / translation", "Russian"], ["Session queue", "Up to 10 cards"], ["Theme", "Light"]].map(([label, value]) =>
           <Row key={label}><Body style={{ flexShrink: 1 }}>{label}</Body><Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }}>{value}</Body></Row>
         )}
       </Card>
     </View>
     <Button title="Restore defaults…" secondary disabled={task.pending} onPress={() => void task.run(async () => {
-      if (!await confirm("Restore settings defaults?", "Models, parameters and prompts reset. The key, materials, Dictionary and learning progress stay unchanged. Data-transfer consent is also kept.")) return;
+      if (!await confirm("Restore settings defaults?", "Target resets to B1 → B2. Models, parameters and prompts reset. The key, materials, Dictionary and learning progress stay unchanged. Data-transfer consent is also kept.")) return;
       await repo.update(d => { d.settings = { ...defaults(), consent: d.settings.consent }; });
     })} />
     {active && <Button title="Cancel active AI request" secondary onPress={() => operations.cancel()} />}

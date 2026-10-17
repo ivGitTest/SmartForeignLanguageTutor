@@ -55,6 +55,7 @@ function createMaterial(
     bFingerprint: bVersion ? makeBFingerprint(settings) : "",
     bVersion,
     bModelUsed: bVersion ? settings.bModel : "",
+    bCEFRPair: settings.cefrPair,
     bCreatedAt: bVersion ? createdAt : 0,
     aModelUsed: a ? settings.aModel : "",
     aCreatedAt: a ? createdAt : 0,

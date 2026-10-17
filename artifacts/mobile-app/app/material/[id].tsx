@@ -6,7 +6,7 @@ import { AudioPlayer } from "@/components/audio-player";
 import { Disclosure } from "@/components/disclosure";
 import { SelectableTranscript } from "@/components/selectable-transcript";
 import { useApp } from "@/core/app-store";
-import { bIsStale, translationIsStale, id as newId, normalizeExpression, timezone } from "@/core/model";
+import { bIsStale, cefrLevels, translationIsStale, id as newId, normalizeExpression, timezone } from "@/core/model";
 import { generateA, generateB, retryTranslation, translateExpression } from "@/core/actions";
 import { operations } from "@/core/operations";
 import { deleteMaterial } from "@/core/material-delete";
@@ -39,6 +39,7 @@ export default function MaterialScreen() {
   if (!m) return <Screen><Heading small>Material no longer exists</Heading><Button title="Materials" onPress={() => router.replace("/materials")} /></Screen>;
   const materialTitle = titleForMaterial(m);
   const stale = bIsStale(m, data.settings);
+  const { targetCEFR } = cefrLevels(data.settings.cefrPair);
   const busy = !!active || task.pending || !!saveCount;
   async function saveA(value: string) {
     setA(value); setSaveError("");
@@ -90,11 +91,11 @@ export default function MaterialScreen() {
         onChangeText={v => void saveA(v)} />
       <Body muted style={{ fontSize: 12 }}>{saveCount ? "Saving A…" : saveError ? "Draft not saved" : "A saved locally"}</Body>
       {!!saveError && <><Notice error>{saveError}</Notice><Button title="Retry saving A" secondary onPress={() => void saveA(a)} /></>}
-      <Button title={m.b ? "Improve again · B2" : "Improve to B2 · B"} disabled={busy || !m.a.trim() || a !== m.a || !!saveError} icon="auto-fix-high" onPress={() => void task.run(() => generateB(id))} />
+      <Button title={m.b ? `Improve again · ${targetCEFR}` : `Improve to ${targetCEFR} · B`} disabled={busy || !m.a.trim() || a !== m.a || !!saveError} icon="auto-fix-high" onPress={() => void task.run(() => generateB(id))} />
     </Card>}
     {!!m.b && <Card>
       <Row><Heading small>B · Improved</Heading><IconButton name="volume-up" label="Listen to B" onPress={() => void task.run(() => speak(m.b, task.setError))} /></Row>
-      <Body muted>B2 English · select a word or expression to translate it.</Body>
+      <Body muted>{cefrLevels(m.bCEFRPair).targetCEFR} English · select a word or expression to translate it.</Body>
       {!!m.bModelUsed && <Body muted style={{ fontSize: 11 }}>{m.bModelUsed} · {new Date(m.bCreatedAt).toLocaleString("en-GB")}</Body>}
       {stale && <Notice>Saved B was created before A or AI settings changed. It remains available for word selection and the Dictionary. Improve current A again only if you want an updated B.</Notice>}
       <SelectableTranscript text={m.b} onSelect={(expression, sentence) => select(expression, sentence)} />

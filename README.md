@@ -12,15 +12,15 @@
 
 ### Smart Lang Tutor
 
-Smart Lang Tutor — Android-приложение, которое превращает короткую запись речи на английском в транскрибацию, улучшенный вариант на уровнь выше, перевод на русский и карточки слов для интервального повторения.
+Smart Lang Tutor — Android-приложение, которое превращает короткую запись речи на английском в транскрибацию, улучшенный вариант на выбранном уровне CEFR, перевод на русский и карточки слов для интервального повторения.
 
-В приложении три независимых режима: **Словарь**, **Материалы** и **Обучение**. При запуске открывается Словарь. В MVP зафиксированы английский интерфейс и язык обучения, русский язык перевода, улучшение B1 → B2 и светлая тема.
+В приложении три независимых режима: **Словарь**, **Материалы** и **Обучение**. При запуске открывается Словарь. Английский интерфейс и язык обучения, русский язык перевода и светлая тема остаются фиксированными. Пара уровней CEFR выбирается в Settings → Target; по умолчанию B1 → B2.
 
 ### Основные функции
 
 - Запись речи одного человека на английском длительностью до 2 минут. Аудио хранится в приватном каталоге приложения и воспроизводится локально.
 - Создание **А** — английской транскрибации — из сохранённого аудио. Текст А можно исправить перед улучшением.
-- Создание **Б** — улучшенного английского текста на основе текущего А, с уровня B1 до B2. Задача модели — улучшить грамматику и естественность, сохранив смысл; безошибочное сохранение смысла не гарантируется.
+- Создание **Б** — улучшенного английского текста на основе текущего А с выбранного исходного до целевого уровня CEFR. Задача модели — улучшить грамматику и естественность, сохранив смысл; безошибочное сохранение смысла и точное соответствие уровню не гарантируются.
 - Перевод Б на русский после успешного улучшения. Перевод свёрнут по умолчанию.
 - Выделение слова или выражения в Б для контекстного перевода на русский и добавления в Словарь вместе с примером из предложения.
 - Ручное добавление, поиск, редактирование и удаление карточек. Для ручного создания карточки ИИ не требуется.
@@ -30,7 +30,7 @@ Smart Lang Tutor — Android-приложение, которое превращ
 
 ### Зачем нужен такой подход?
 
-Приложение начинает не с чужих примеров, а с того, что вы хотите сказать. Вы говорите естественно, проверяете транскрибацию, а затем сравниваете её с английской формулировкой, адаптированной с B1 до B2. Так говорение связывается с осознанным изучением того, как выразить собственные мысли на целевом уровне.
+Приложение начинает не с чужих примеров, а с того, что вы хотите сказать. Вы говорите естественно, проверяете транскрибацию, а затем сравниваете её с английской формулировкой, адаптированной к выбранному целевому уровню. Так говорение связывается с осознанным изучением того, как выразить собственные мысли на целевом уровне.
 
 Слова и выражения можно сохранить из улучшенного текста вместе с контекстом предложения. Режим «Обучение» возвращает карточки для активного припоминания по расписанию SM-2. Так в одном процессе сочетаются говорение, изучение слов и интервальное повторение. Регулярные короткие занятия помогают формировать привычку и поддерживать запоминание; результат зависит от учащегося и качества ответов ИИ.
 
@@ -39,7 +39,8 @@ Smart Lang Tutor — Android-приложение, которое превращ
 - Для действий с ИИ нужны интернет и собственный API-ключ OpenRouter. Аудио или текст отправляется в OpenRouter только при запуске соответствующей операции; запрос может быть направлен поставщику модели. Оплата списывается с аккаунта OpenRouter, а правила хранения данных зависят от поставщика.
 - Чтобы создать ключ, войдите в [OpenRouter](https://openrouter.ai/) и откройте страницу [API Keys](https://openrouter.ai/keys). В [официальной инструкции по аутентификации](https://openrouter.ai/docs/api_reference/authentication) описаны ключи и лимиты. Создайте ключ, установите лимит расходов и введите его в приложении: **Settings → Connect or manage key**. Не вставляйте личный ключ в исходный код и не добавляйте его в репозиторий.
 - В MVP поддерживается **только английский язык для обучения**. Интерфейс приложения на английском, язык перевода/родной язык зафиксирован на русском.
-- В MVP доступна **одна пара уровней CEFR: B1 → B2**. Выбрать другой исходный или целевой уровень пока нельзя.
+- В **Settings → Target** доступны пары CEFR: **A2 → B1, A2 → B2, A2 → C1, B1 → B2, B1 → C1, B1 → C2**. Выбор сохраняется; Restore defaults возвращает B1 → B2. Настройка влияет только на улучшение Б, а не на транскрибацию А.
+- При смене пары уровней сохранённые Б и перевод помечаются устаревшими, но не удаляются. Для нового уровня запустите улучшение повторно; слова из прежнего Б по-прежнему можно добавлять в Словарь.
 - ИИ может ошибаться или изменить смысл. Перед использованием проверяйте транскрибацию и улучшенный текст.
 - Учебные данные хранятся на устройстве; облачной синхронизации и автоматического резервного копирования нет. Очистка данных приложения или его удаление приводит к потере сохранённых данных.
 
@@ -47,7 +48,7 @@ Smart Lang Tutor — Android-приложение, которое превращ
 
 1. **Запись и сохранение аудио.** Запись выполняется локально на Android. Аудио не отправляется, пока пользователь не запускает транскрибацию.
 2. **Транскрибация в А.** Приложение отправляет выбранную аудиозапись и язык English выбранной модели распознавания через OpenRouter. Результат сохраняется на устройстве как А.
-3. **Улучшение в Б.** Приложение отправляет текущий текст А и фиксированную пару B1 → B2 выбранной текстовой модели. Б создаётся только на основе А, напрямую из аудио улучшение не запускается.
+3. **Улучшение в Б.** Приложение отправляет текущий текст А и выбранную пару CEFR текстовой модели. Та же пара подставляется во встроенную инструкцию. Б создаётся только на основе А, напрямую из аудио улучшение не запускается.
 4. **Перевод Б.** После сохранения завершённого Б приложение отправляет его выбранной текстовой модели для перевода с английского на русский. Ошибка перевода не удаляет Б.
 5. **Перевод выражения.** По запросу из Б приложение отправляет выделенное выражение и предложение-контекст для контекстного перевода на русский. Результат можно добавить в локальный Словарь.
 
@@ -72,7 +73,7 @@ Android-приложение хранит учебные данные в SQLite,
 
 Инструкции для ИИ и параметры генерации редактируются отдельно от TypeScript-кода:
 
-- `artifacts/mobile-app/config/ai-prompts.json` — инструкции для улучшения Б, полного перевода и перевода выделенного выражения.
+- `artifacts/mobile-app/config/ai-prompts.json` — инструкции для улучшения Б, полного перевода и перевода выделенного выражения. В инструкции Б placeholders `{sourceCEFR}` и `{targetCEFR}` заменяются выбранными уровнями перед запросом.
 - `artifacts/mobile-app/config/ai-parameters.json` — параметры транскрибации А, улучшения Б и перевода. Контекстный перевод использует параметры полного перевода.
 - `artifacts/mobile-app/config/app_info.json` — имя разработчика и подпись/адрес поддержки на экране Settings. Для форка замените эти значения своими.
 
@@ -121,11 +122,11 @@ Android-приложение хранит учебные данные в SQLite,
 - [x] Подключение OpenRouter, защищённое хранение ключа, ограниченные списки моделей А/Б.
 - [x] Фиксированные настройки MVP: интерфейс и обучение на английском, перевод на русский, B1 → B2.
 
-### Запланировано после MVP
+### Развитие после MVP
 
 - [ ] Выбор языка интерфейса и локализация на русский; русский — по умолчанию.
 - [ ] Поддержка других языков обучения, родного языка и языка перевода, а также провайдеров ИИ.
-- [ ] Выбор исходного и целевого уровней CEFR и добавление других пар, например B1 → C1.
+- [x] Выбор пары уровней CEFR: A2 → B1/B2/C1 или B1 → B2/C1/C2.
 - [ ] Поддержка FSRS как дополнительного алгоритма интервального повторения.
 - [ ] Экспорт словаря в формате, совместимом с Anki.
 - [ ] Экспорт материалов в CSV: ID, дата и время, исходный и улучшенный тексты.
@@ -181,15 +182,15 @@ pnpm --filter @workspace/mobile-app run build:apk:production
 
 ### Smart Lang Tutor
 
-Smart Lang Tutor is an Android app for turning short spoken English recordings into a verbatim transcript, a B1 → B2 rewrite, a Russian translation, and vocabulary cards for spaced repetition.
+Smart Lang Tutor is an Android app for turning short spoken English recordings into a verbatim transcript, a rewrite at a selected CEFR level, a Russian translation, and vocabulary cards for spaced repetition.
 
-The app has three independent modes: **Dictionary**, **Materials**, and **Learning**. It opens in Dictionary. MVP settings are fixed to an English interface, English learning content, Russian as the native/translation language, B1 → B2, and a light theme.
+The app has three independent modes: **Dictionary**, **Materials**, and **Learning**. It opens in Dictionary. The English interface, English learning content, Russian native/translation language, and light theme remain fixed. Choose a CEFR pair in Settings → Target; the default is B1 → B2.
 
 ### Main features
 
 - Record one English speaker for up to 2 minutes. Recordings are kept in the app’s private storage and can be played back locally.
 - Create **A**, the English transcription, from saved audio. A is editable so corrections can be made before improvement.
-- Create **B**, an English rewrite from the current A, targeting B2 from B1. B is intended to improve grammar and naturalness without changing the speaker’s meaning; the model cannot guarantee perfect preservation.
+- Create **B**, an English rewrite from the current A using the selected source and target CEFR levels. B is intended to improve grammar and naturalness without changing the speaker’s meaning; the model cannot guarantee perfect preservation or exact level alignment.
 - Generate a Russian translation of B after a successful improvement. The translation is collapsed by default.
 - Select a word or phrase in B to request a contextual Russian translation and add it to the Dictionary with its example sentence.
 - Add, search, edit, and delete vocabulary cards manually. Manual card creation does not require AI.
@@ -199,7 +200,7 @@ The app has three independent modes: **Dictionary**, **Materials**, and **Learni
 
 ### Why use this learning approach?
 
-The app starts from what you want to say, rather than from unrelated example sentences. You speak naturally, review the transcription, then compare it with an English version adapted from B1 to B2. That connects speaking practice with noticing how to express your own ideas at the target level.
+The app starts from what you want to say, rather than from unrelated example sentences. You speak naturally, review the transcription, then compare it with an English version adapted to your selected target level. That connects speaking practice with noticing how to express your own ideas at the target level.
 
 Words and phrases can be saved from the improved text together with their sentence context. The Learning mode brings saved cards back for active recall on an SM-2 schedule, combining speaking, vocabulary, and spaced review in one workflow. Regular short sessions can help build a study habit and reinforce recall; results depend on the learner and the quality of each AI response.
 
@@ -208,7 +209,8 @@ Words and phrases can be saved from the improved text together with their senten
 - AI actions require an internet connection and your own OpenRouter API key. The app sends audio or text to OpenRouter only when you start the matching AI action; requests may be routed to a model provider. AI usage is billed to your OpenRouter account, and provider data-retention rules may vary.
 - To create a key, sign in to [OpenRouter](https://openrouter.ai/) and use its [API Keys page](https://openrouter.ai/keys). The [official authentication guide](https://openrouter.ai/docs/api_reference/authentication) explains key use and limits. Create a key, set a spending limit, then enter it in the app under **Settings → Connect or manage key**. Never put a personal key in source code or commit it to a repository.
 - The MVP supports **English as the only learning language**. The interface is English and the translation/native language is fixed to Russian.
-- The MVP supports **one CEFR level pair: B1 → B2**. Learners cannot select other current or target levels yet.
+- **Settings → Target** offers six CEFR pairs: **A2 → B1, A2 → B2, A2 → C1, B1 → B2, B1 → C1, B1 → C2**. The choice is saved; Restore defaults returns it to B1 → B2. It affects B improvement only, not A transcription.
+- Changing the pair marks saved B and its translation as out of date without deleting them. Improve A again for the new level; words from the previous B can still be added to Dictionary.
 - AI-generated text can contain mistakes or change meaning. Check the transcript and improved text before relying on them.
 - Learning data is stored locally on the device, with no cloud sync or automatic backup. Clearing app data or uninstalling the app removes it.
 
@@ -216,7 +218,7 @@ Words and phrases can be saved from the improved text together with their senten
 
 1. **Record and save audio.** Recording is a local Android operation. No audio is sent until the user starts transcription.
 2. **Transcribe to A.** The app sends the selected audio and English-language setting to the chosen speech-to-text model through OpenRouter. The result is saved as A on the device.
-3. **Improve to B.** The app sends the current A and fixed B1 → B2 target to the chosen text model. B is created only from A, never directly from audio.
+3. **Improve to B.** The app sends the current A and selected CEFR pair to the chosen text model. The same pair is inserted into the built-in instruction. B is created only from A, never directly from audio.
 4. **Translate B.** After a complete B is saved, the app sends B to the selected text model for English-to-Russian translation. A translation failure does not discard B.
 5. **Translate a selected expression.** When requested from B, the app sends the selected expression and its sentence context for a contextual Russian translation. The user can add that result to the local Dictionary.
 
@@ -241,7 +243,7 @@ The Android app uses SQLite for learning data and private app files for audio. D
 
 AI instructions and generation parameters are editable without changing TypeScript:
 
-- `artifacts/mobile-app/config/ai-prompts.json` — instructions for improving B, translating all of B, and translating a selected expression.
+- `artifacts/mobile-app/config/ai-prompts.json` — instructions for improving B, translating all of B, and translating a selected expression. The B instruction's `{sourceCEFR}` and `{targetCEFR}` placeholders are replaced with the selected levels before each request.
 - `artifacts/mobile-app/config/ai-parameters.json` — A transcription, B improvement, and translation request parameters. Context translation shares the full-translation parameters.
 - `artifacts/mobile-app/config/app_info.json` — developer name and support label/URL displayed in Settings. Update these for a fork.
 
@@ -290,11 +292,11 @@ The MVP scope is complete:
 - [x] OpenRouter connection, protected key storage, and restricted A/B model lists.
 - [x] Fixed MVP languages and level: English interface, English learning, Russian translation, B1 → B2.
 
-### Planned after the MVP
+### Development after the MVP
 
 - [ ] Add interface-language selection and Russian localization; Russian is the default.
 - [ ] Add other learning languages, native/translation language options, and AI providers.
-- [ ] Let learners select their starting and target CEFR levels and add more level pairs, such as B1 → C1.
+- [x] Choose a CEFR pair: A2 → B1/B2/C1 or B1 → B2/C1/C2.
 - [ ] Add FSRS as another spaced-repetition algorithm.
 - [ ] Export vocabulary in an Anki-compatible format.
 - [ ] Export materials to CSV, including ID, date/time, original text, and improved text.
