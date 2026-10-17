@@ -157,6 +157,7 @@ pnpm --filter @workspace/mobile-app run eas:login
 ```
 
 Перед каждой сборкой задайте версию приложения в формате `x.y` (две числовые части, например `1.1`). Она попадёт в APK и будет показана на экране Settings. Внутренний Android `versionCode` EAS ведёт отдельно и увеличивает автоматически.
+Если в Settings указано `Preview`, запущена preview-среда, а не установленный APK. Версию, введённую для EAS-сборки, проверяйте в APK, установленном из этой сборки; там отображаются версия приложения и номер сборки Android.
 
 ```sh
 pnpm --filter @workspace/mobile-app run build:apk -- 1.1
@@ -328,6 +329,7 @@ pnpm --filter @workspace/mobile-app run eas:login
 ```
 
 Set the app version as `x.y` (two numeric parts, such as `1.1`) for each build. It is included in the APK and shown on the Settings screen. EAS manages and automatically increments Android's internal `versionCode` separately.
+If Settings shows `Preview`, the app is running in a preview environment rather than from the installed APK. Verify the version entered for an EAS build in the APK produced by that build; it displays the app version and Android build number.
 
 ```sh
 pnpm --filter @workspace/mobile-app run build:apk -- 1.1

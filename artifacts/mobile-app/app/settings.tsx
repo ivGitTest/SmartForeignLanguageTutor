@@ -4,6 +4,7 @@ import { router, useFocusEffect } from "expo-router";
 import { Host, Picker } from "@expo/ui";
 import { Body, Button, Card, Heading, Label, Notice, Row, Screen, useTask } from "@/components/ui";
 import { useApp } from "@/core/app-store";
+import { appVersionLabel } from "@/core/app-version";
 import { A_MODELS, B_MODELS, CEFR_PAIRS, cefrPairSchema, cefrPairLabel, defaults } from "@/core/model";
 import { keyStorage } from "@/core/key";
 import { operations } from "@/core/operations";
@@ -18,10 +19,12 @@ export default function SettingsScreen() {
   const { data, repo, active } = useApp();
   const c = useColors();
   const task = useTask();
-  const appVersion = Constants.expoConfig?.version ?? Application.nativeApplicationVersion ?? "Unknown";
-  const nativeBuildVersion = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
-    ? null
-    : Application.nativeBuildVersion;
+  const appVersion = appVersionLabel({
+    isStoreClient: Constants.executionEnvironment === ExecutionEnvironment.StoreClient,
+    expoConfigVersion: Constants.expoConfig?.version,
+    nativeApplicationVersion: Application.nativeApplicationVersion,
+    nativeBuildVersion: Application.nativeBuildVersion,
+  });
   const [connected, setConnected] = useState<boolean | null>(null);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [catalogError, setCatalogError] = useState("");
@@ -132,7 +135,7 @@ export default function SettingsScreen() {
       </Row>
       <Row>
         <Body>Version:</Body>
-        <Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }} testID="app-version">{appVersion} · {nativeBuildVersion ? `Build ${nativeBuildVersion}` : "Preview"}</Body>
+        <Body style={{ fontFamily: "DMSans_700Bold", flexShrink: 1, textAlign: "right" }} testID="app-version">{appVersion}</Body>
       </Row>
       <Row>
         <Body>Support:</Body>

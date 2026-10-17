@@ -11,6 +11,7 @@ import { sentenceForSelection, transcriptDocument } from "../core/selection";
 import { operations } from "../core/operations";
 import { createMaterialActions } from "../core/material-actions";
 import { formatRecordingTitle, titleForMaterial } from "../core/recording-title";
+import { appVersionLabel } from "../core/app-version";
 
 function card(id: string, dueAt: number | null = null): Card {
   return { id, createdAt: Number(id) || 1, expression: `word ${id}`, translation: "слово", example: "", interval: 0, repetition: 0, efactor: 2.5, dueAt, timezone: "UTC" };
@@ -30,6 +31,26 @@ function materialData() {
   }]);
   return d;
 }
+test("app version label uses the installed app version, not stale Expo config", () => {
+  assert.equal(appVersionLabel({
+    isStoreClient: false,
+    expoConfigVersion: "1.0",
+    nativeApplicationVersion: "2.1",
+    nativeBuildVersion: "8",
+  }), "2.1 · Build 8");
+});
+test("Expo Go preview never displays the host app's native version", () => {
+  assert.equal(appVersionLabel({
+    isStoreClient: true,
+    nativeApplicationVersion: "1.0.0",
+    nativeBuildVersion: "1",
+  }), "Preview");
+  assert.equal(appVersionLabel({
+    isStoreClient: true,
+    expoConfigVersion: "2.1",
+    nativeApplicationVersion: "1.0.0",
+  }), "2.1 · Preview");
+});
 const result = (text: string, complete = true) => ({ text, complete, cost: null });
 
 test("recording titles use local DD.MM.YYYY/HH:MM:SS/seconds format", () => {
