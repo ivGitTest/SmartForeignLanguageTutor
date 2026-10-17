@@ -39,8 +39,8 @@ Smart Lang Tutor — Android-приложение, которое превращ
 - Для действий с ИИ нужны интернет и собственный API-ключ OpenRouter. Аудио или текст отправляется в OpenRouter только при запуске соответствующей операции; запрос может быть направлен поставщику модели. Оплата списывается с аккаунта OpenRouter, а правила хранения данных зависят от поставщика.
 - Чтобы создать ключ, войдите в [OpenRouter](https://openrouter.ai/) и откройте страницу [API Keys](https://openrouter.ai/keys). В [официальной инструкции по аутентификации](https://openrouter.ai/docs/api_reference/authentication) описаны ключи и лимиты. Создайте ключ, установите лимит расходов и введите его в приложении: **Settings → Connect or manage key**. Не вставляйте личный ключ в исходный код и не добавляйте его в репозиторий.
 - В MVP поддерживается **только английский язык для обучения**. Интерфейс приложения на английском, язык перевода/родной язык зафиксирован на русском.
-- В **Settings → Target** доступны пары CEFR: **A2 → B1, A2 → B2, A2 → C1, B1 → B2, B1 → C1, B1 → C2**. Выбор сохраняется; Restore defaults возвращает B1 → B2. Настройка влияет только на улучшение Б, а не на транскрибацию А.
-- При смене пары уровней сохранённые Б и перевод помечаются устаревшими, но не удаляются. Для нового уровня запустите улучшение повторно; слова из прежнего Б по-прежнему можно добавлять в Словарь.
+- В **Settings → Target** можно выбрать одну из шести пар CEFR: **A2 → B1, A2 → B2, A2 → C1, B1 → B2, B1 → C1, B1 → C2**. По умолчанию выбрана B1 → B2; выбор сохраняется. Настройка влияет только на улучшение Б, а не на транскрибацию А.
+- При смене пары сохранённые Б и перевод помечаются устаревшими, но не удаляются. Если нужен Б на новом уровне, запустите улучшение ещё раз: приложение отправит сохранённый текст А на новую AI-генерацию, но не будет повторно транскрибировать аудио. Слова из прежнего Б по-прежнему можно добавлять в Словарь.
 - ИИ может ошибаться или изменить смысл. Перед использованием проверяйте транскрибацию и улучшенный текст.
 - Учебные данные хранятся на устройстве; облачной синхронизации и автоматического резервного копирования нет. Очистка данных приложения или его удаление приводит к потере сохранённых данных.
 
@@ -120,13 +120,13 @@ Android-приложение хранит учебные данные в SQLite,
 - [x] Контекстный перевод и добавление слов в Словарь из Б.
 - [x] Повторение по SM-2 с сохранением прогресса и сессиями до 10 карточек.
 - [x] Подключение OpenRouter, защищённое хранение ключа, ограниченные списки моделей А/Б.
-- [x] Фиксированные настройки MVP: интерфейс и обучение на английском, перевод на русский, B1 → B2.
+- [x] Фиксированные языки MVP: интерфейс и обучение на английском, перевод на русский; B1 → B2 — начальная пара уровней.
 
 ### Развитие после MVP
 
 - [ ] Выбор языка интерфейса и локализация на русский; русский — по умолчанию.
 - [ ] Поддержка других языков обучения, родного языка и языка перевода, а также провайдеров ИИ.
-- [x] Выбор пары уровней CEFR: A2 → B1/B2/C1 или B1 → B2/C1/C2.
+- [x] Выбор пары уровней CEFR в Settings → Target: A2 → B1/B2/C1 или B1 → B2/C1/C2; по умолчанию B1 → B2.
 - [ ] Поддержка FSRS как дополнительного алгоритма интервального повторения.
 - [ ] Экспорт словаря в формате, совместимом с Anki.
 - [ ] Экспорт материалов в CSV: ID, дата и время, исходный и улучшенный тексты.
@@ -209,8 +209,8 @@ Words and phrases can be saved from the improved text together with their senten
 - AI actions require an internet connection and your own OpenRouter API key. The app sends audio or text to OpenRouter only when you start the matching AI action; requests may be routed to a model provider. AI usage is billed to your OpenRouter account, and provider data-retention rules may vary.
 - To create a key, sign in to [OpenRouter](https://openrouter.ai/) and use its [API Keys page](https://openrouter.ai/keys). The [official authentication guide](https://openrouter.ai/docs/api_reference/authentication) explains key use and limits. Create a key, set a spending limit, then enter it in the app under **Settings → Connect or manage key**. Never put a personal key in source code or commit it to a repository.
 - The MVP supports **English as the only learning language**. The interface is English and the translation/native language is fixed to Russian.
-- **Settings → Target** offers six CEFR pairs: **A2 → B1, A2 → B2, A2 → C1, B1 → B2, B1 → C1, B1 → C2**. The choice is saved; Restore defaults returns it to B1 → B2. It affects B improvement only, not A transcription.
-- Changing the pair marks saved B and its translation as out of date without deleting them. Improve A again for the new level; words from the previous B can still be added to Dictionary.
+- Choose one of six CEFR pairs in **Settings → Target**: **A2 → B1, A2 → B2, A2 → C1, B1 → B2, B1 → C1, B1 → C2**. B1 → B2 is the default, and the choice is saved. It affects B improvement only, not A transcription.
+- Changing the pair marks saved B and its translation as out of date without deleting them. To get B at the new level, run improvement again: the app sends the saved A text for a new AI generation, but does not transcribe the audio again. Words from the previous B can still be added to Dictionary.
 - AI-generated text can contain mistakes or change meaning. Check the transcript and improved text before relying on them.
 - Learning data is stored locally on the device, with no cloud sync or automatic backup. Clearing app data or uninstalling the app removes it.
 
@@ -290,13 +290,13 @@ The MVP scope is complete:
 - [x] Contextual translation and adding vocabulary from B.
 - [x] SM-2 reviews with saved progress and sessions of up to 10 cards.
 - [x] OpenRouter connection, protected key storage, and restricted A/B model lists.
-- [x] Fixed MVP languages and level: English interface, English learning, Russian translation, B1 → B2.
+- [x] Fixed MVP languages: English interface and learning, Russian translation; B1 → B2 is the default CEFR pair.
 
 ### Development after the MVP
 
 - [ ] Add interface-language selection and Russian localization; Russian is the default.
 - [ ] Add other learning languages, native/translation language options, and AI providers.
-- [x] Choose a CEFR pair: A2 → B1/B2/C1 or B1 → B2/C1/C2.
+- [x] Choose a CEFR pair in Settings → Target: A2 → B1/B2/C1 or B1 → B2/C1/C2; B1 → B2 is the default.
 - [ ] Add FSRS as another spaced-repetition algorithm.
 - [ ] Export vocabulary in an Anki-compatible format.
 - [ ] Export materials to CSV, including ID, date/time, original text, and improved text.
