@@ -16,6 +16,7 @@ def run_build_script(
     *,
     version: str = "2.4",
     profile: str = "preview",
+    separator: bool = False,
     token: str | None = None,
     account: str = "ivaexpi",
 ):
@@ -58,8 +59,12 @@ else:
         else:
             environment["EXPO_TOKEN"] = token
 
+        command = ["bash", str(BUILD_SCRIPT)]
+        if separator:
+            command.append("--")
+        command.append(version)
         return subprocess.run(
-            ["bash", str(BUILD_SCRIPT), version],
+            command,
             cwd=APP,
             env=environment,
             capture_output=True,
@@ -98,6 +103,15 @@ def test_production_build_uses_requested_version_and_profile():
     assert result.returncode == 0, result.stdout + result.stderr
     assert "APP_VERSION=3.1" in result.stdout
     assert "--profile production" in result.stdout
+
+
+@pytest.mark.offline
+def test_build_accepts_pnpm_argument_separator_before_version():
+    result = run_build_script(version="2.1", separator=True)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "APP_VERSION=2.1" in result.stdout
+    assert "--profile preview" in result.stdout
 
 
 @pytest.mark.offline

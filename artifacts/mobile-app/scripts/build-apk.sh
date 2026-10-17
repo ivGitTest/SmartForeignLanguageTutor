@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# pnpm may forward its `--` argument separator to the underlying script.
+if [[ "${1:-}" == "--" ]]; then
+  shift
+fi
+
 VERSION="${1:-}"
 BUILD_PROFILE="${BUILD_PROFILE:-preview}"
 
