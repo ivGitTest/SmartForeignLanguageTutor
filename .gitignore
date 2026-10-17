@@ -57,6 +57,7 @@ Thumbs.db
 /.replit
 /.replitignore
 artifacts/mobile-app/.replit-artifact/
+artifacts/mobile-app/.replit-artifact/*
 
 # Agent memory, instructions and local service notes (not application source)
 .agents/
