@@ -1,5 +1,22 @@
 [English](#english) · [Русский](#русский)
 
+## Скриншоты приложения · App screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="artifacts/mobile-app/assets/images/Screenshot_2026-10-17-20-29-06-130_com.englishlab.mobile.jpg" alt="Экран Materials / Materials list" width="170"><br>Материалы / Materials</td>
+    <td align="center"><img src="artifacts/mobile-app/assets/images/Screenshot_2026-10-17-20-29-24-464_com.englishlab.mobile.jpg" alt="Настройки приложения / App settings" width="170"><br>Настройки / Settings</td>
+    <td align="center"><img src="artifacts/mobile-app/assets/images/Screenshot_2026-10-17-20-31-11-285_com.englishlab.mobile.jpg" alt="Экран материала / Material details" width="170"><br>Материал / Material</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center"><img src="artifacts/mobile-app/assets/images/screenshot-dictionary.png" alt="Экран Dictionary / Dictionary screen" width="190"><br>Словарь / Dictionary</td>
+    <td align="center"><img src="artifacts/mobile-app/assets/images/screenshot-learning.png" alt="Экран Learning / Learning screen" width="190"><br>Обучение / Learning</td>
+  </tr>
+</table>
+
 ## Лицензия
 
 [![License: CC BY-NC-SA 4.0](https://shields.io)](https://creativecommons.org)
