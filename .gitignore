@@ -56,6 +56,7 @@ Thumbs.db
 # Replit workspace and image-packaging settings stay local; pnpm/EAS builds do not use these files.
 /.replit
 /.replitignore
+artifacts/mobile-app/.replit-artifact/
 
 # Agent memory, instructions and local service notes (not application source)
 .agents/
